@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>snap-time-agent — an AI that hesitates, forgets, and forgives</title>
+<meta name="description" content="A research framework for human-like AI agents — emotion vectors, aging memory, and bounded autonomy time. Watch the equation come alive.">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<style>
+  :root {
+    --bg: #07090f;
+    --bg-soft: #0e131f;
+    --bg-card: #131927;
+    --text: #e8edf5;
+    --text-mute: #8c97ad;
+    --accent: #ffb84d;
+    --survival: #ff6b6b;
+    --guilt:    #c084fc;
+    --loyalty:  #4fc3f7;
+    --fear:     #ffd166;
+    --curiosity:#7fffa1;
+    --memory:   #5b8def;
+    --time:     #ffa94d;
+    --decision: #69e0a8;
+    --border:   rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3 { font-weight: 600; letter-spacing: -0.01em; }
+  code, .mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+  /* ==== HERO ==== */
+  .hero {
+    position: relative;
+    height: 100vh;
+    min-height: 640px;
+    overflow: hidden;
+    background: radial-gradient(ellipse at center, #0c1226 0%, #07090f 70%);
+  }
+  #hero-canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 24px;
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    margin: 0 0 14px;
+    background: linear-gradient(120deg, #fff 0%, #b8c4dd 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .tagline {
+    font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+    color: var(--text-mute);
+    margin: 0 0 38px;
+    max-width: 720px;
+  }
+  .hero-equation {
+    background: rgba(7,9,15,0.55);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 32px;
+    font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+    pointer-events: auto;
+  }
+  .scroll-cue {
+    position: absolute; bottom: 28px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.85rem; color: var(--text-mute);
+    animation: bob 2s ease-in-out infinite;
+  }
+  @keyframes bob {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50%     { transform: translateX(-50%) translateY(6px); }
+  }
+
+  /* ==== SECTIONS ==== */
+  section.content {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 100px 28px;
+  }
+  section.content h2 {
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    margin: 0 0 12px;
+  }
+  section.content .lede {
+    color: var(--text-mute);
+    font-size: 1.1rem;
+    max-width: 760px;
+    margin: 0 0 48px;
+  }
+
+  /* ==== MISSION ==== */
+  .mission-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 22px;
+  }
+  .mission-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+  }
+  .mission-card .num {
+    font-size: 0.78rem; color: var(--accent);
+    letter-spacing: 0.18em; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .mission-card h3 { margin: 0 0 8px; font-size: 1.15rem; }
+  .mission-card p { margin: 0; color: var(--text-mute); font-size: 0.97rem; }
+
+  /* ==== EQUATION SECTION ==== */
+  .equation-display {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px;
+    margin-bottom: 28px;
+    overflow-x: auto;
+    text-align: center;
+    font-size: 1.2rem;
+  }
+  .legend {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-top: 20px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 0.93rem;
+  }
+  .legend-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ==== COMPONENTS ==== */
+  .components-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .comp-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 28px;
+    align-items: stretch;
+  }
+  @media (max-width: 800px) {
+    .comp-card { grid-template-columns: 1fr; }
+  }
+  .comp-viz {
+    background: #0a0f1c;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    aspect-ratio: 1 / 1;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+  .comp-viz canvas { width: 100%; height: 100%; display: block; }
+  .comp-body h3 {
+    font-size: 1.4rem;
+    margin: 0 0 4px;
+  }
+  .comp-body .sub {
+    color: var(--text-mute);
+    font-size: 0.95rem;
+    margin: 0 0 18px;
+  }
+  .comp-body p { margin: 0 0 14px; }
+  .sliders {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin: 18px 0;
+  }
+  .slider-row {
+    display: grid;
+    grid-template-columns: 130px 1fr 60px;
+    gap: 12px;
+    align-items: center;
+    font-size: 0.9rem;
+  }
+  .slider-row label { color: var(--text-mute); }
+  .slider-row .val { font-family: "SF Mono", monospace; color: var(--accent); text-align: right; }
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: #2a3448;
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg-card);
+  }
+  .effect {
+    background: rgba(255, 184, 77, 0.06);
+    border-left: 3px solid var(--accent);
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 0.93rem;
+    color: #ffe2ac;
+    min-height: 56px;
+  }
+
+  /* ==== SIMULATION ==== */
+  .sim-wrap {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 28px;
+  }
+  @media (max-width: 920px) {
+    .sim-wrap { grid-template-columns: 1fr; }
+  }
+  .sim-stage {
+    background: #050810;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    aspect-ratio: 1 / 1;
+    position: relative;
+    overflow: hidden;
+  }
+  .sim-stage canvas { width: 100%; height: 100%; display: block; }
+  .sim-controls h3 { margin: 0 0 10px; }
+  .btn {
+    background: var(--accent);
+    color: #1a1208;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.9; }
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .stats {
+    margin-top: 18px;
+    background: #0a0f1c;
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 0.92rem;
+  }
+  .stats-row {
+    display: flex; justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px dashed rgba(255,255,255,0.06);
+  }
+  .stats-row:last-child { border-bottom: none; }
+  .stats-row b { color: var(--accent); font-family: "SF Mono", monospace; }
+
+  /* ==== FINDINGS ==== */
+  .findings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 22px;
+  }
+  .finding-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    transition: transform 0.18s ease, border-color 0.18s ease;
+  }
+  .finding-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255,184,77,0.35);
+  }
+  .finding-card h3 { margin: 0 0 6px; font-size: 1.15rem; }
+  .finding-card .wave { font-size: 0.78rem; color: var(--accent); letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 8px; }
+  .finding-card p { color: var(--text-mute); margin: 0 0 10px; font-size: 0.95rem; }
+
+  footer {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--text-mute);
+    font-size: 0.92rem;
+    border-top: 1px solid var(--border);
+  }
+  footer a { margin: 0 8px; }
+</style>
+</head>
+<body>
+
+<!-- ========================= HERO ========================= -->
+<section class="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-content">
+    <h1>snap-time-agent</h1>
+    <p class="tagline">An AI architecture that hesitates, forgets, and forgives.<br>
+       Drag the sliders below to see what each piece of the equation does.</p>
+    <div class="hero-equation">
+      $\theta^* = \arg\min_{\theta}\; \mathbb{E}_\tau\!\left[\sum_{t=0}^{T_{\text{snap}}}\!\left(\,\mathcal{L}(f_\theta(x_t),y_t)\;+\;\Phi(v(s_t,a_t),e_t)\;+\;\lambda\cdot\mathrm{MemoryImpact}_t\right)\right]$
+    </div>
+  </div>
+  <div class="scroll-cue">scroll ↓</div>
+</section>
+
+<!-- ========================= MISSION ========================= -->
+<section class="content">
+  <h2>What we're trying to do</h2>
+  <p class="lede">Modern AI optimizes correctness. People do something stranger — we hesitate,
+     forget, forgive, and sometimes choose the wrong thing on purpose because of how we feel
+     and what we remember. This project asks: <i>what minimum extra structure</i> does an
+     LLM-style agent need to behave like that?</p>
+  <div class="mission-grid">
+    <div class="mission-card">
+      <div class="num">01</div><h3>Emotion as state</h3>
+      <p>A 5-dimensional vector — survival, guilt, loyalty, fear, curiosity — that updates every step and tilts the agent's decisions.</p>
+    </div>
+    <div class="mission-card">
+      <div class="num">02</div><h3>Memory that ages</h3>
+      <p>Episodic memories with decay, importance, emotional charge, and similarity-based reactivation. Old wounds quietly weaken; relevant context wakes them.</p>
+    </div>
+    <div class="mission-card">
+      <div class="num">03</div><h3>Bounded thinking time</h3>
+      <p>A "Snap Time" window — the agent has to decide before it expires. Hesitation has a real cost.</p>
+    </div>
+    <div class="mission-card">
+      <div class="num">04</div><h3>Find the failure modes</h3>
+      <p>Then sweep the parameters and find the regimes where the agent paralyzes, forgets too fast, or commits irreversibly. So far we have three named failure modes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= THE EQUATION ========================= -->
+<section class="content" id="equation">
+  <h2>The equation, in pieces</h2>
+  <p class="lede">Standard ML loss on the left. Three new terms on the right — emotion-weighted decision pressure, episodic memory impact, and a Snap Time deliberation horizon.</p>
+
+  <div class="equation-display">
+    $\theta^* = \arg\min_{\theta}\; \mathbb{E}_\tau\!\left[\sum_{t=0}^{T_{\text{snap}}}\!\left(\;\underbrace{\mathcal{L}(f_\theta(x_t),y_t)}_{\text{task loss}}\;+\;\underbrace{\Phi(v(s_t,a_t),e_t)}_{\text{decision pressure}}\;+\;\underbrace{\lambda\cdot\mathrm{MemoryImpact}_t}_{\text{memory bias}}\right)\right]$
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:var(--decision)"></span>$\Phi(v,e_t)$ — emotion-weighted decision pressure</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--memory)"></span>$\mathrm{MemoryImpact}_t$ — aging episodic recall</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--time)"></span>$T_{\text{snap}}$ — bounded autonomy window</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--survival)"></span>$e_t \in [0,1]^5$ — emotion vector</div>
+  </div>
+</section>
+
+<!-- ========================= COMPONENTS ========================= -->
+<section class="content">
+  <h2>What each part does — and what happens if you change it</h2>
+  <p class="lede">Drag the sliders. The visualizations and the "what happens" callouts update live.</p>
+
+  <div class="components-grid">
+
+    <!-- ====== EMOTION ====== -->
+    <article class="comp-card">
+      <div class="comp-viz"><canvas id="viz-emotion"></canvas></div>
+      <div class="comp-body">
+        <h3 style="color:var(--survival)">Emotion vector $e_t$</h3>
+        <p class="sub">$e_t = [\text{survival},\,\text{guilt},\,\text{loyalty},\,\text{fear},\,\text{curiosity}] \in [0,1]^5$</p>
+        <p>A five-dimensional internal state. Each axis decays toward zero; context can pump any of them upward. The geometry of $e_t$ is what makes the agent feel different on different occasions.</p>
+        <div class="sliders">
+          <div class="slider-row"><label>survival</label><input type="range" id="e-survival" min="0" max="1" step="0.01" value="0.4"><span class="val" id="v-e-survival">0.40</span></div>
+          <div class="slider-row"><label>guilt</label><input type="range" id="e-guilt" min="0" max="1" step="0.01" value="0.6"><span class="val" id="v-e-guilt">0.60</span></div>
+          <div class="slider-row"><label>loyalty</label><input type="range" id="e-loyalty" min="0" max="1" step="0.01" value="0.5"><span class="val" id="v-e-loyalty">0.50</span></div>
+          <div class="slider-row"><label>fear</label><input type="range" id="e-fear" min="0" max="1" step="0.01" value="0.2"><span class="val" id="v-e-fear">0.20</span></div>
+          <div class="slider-row"><label>curiosity</label><input type="range" id="e-curiosity" min="0" max="1" step="0.01" value="0.3"><span class="val" id="v-e-curiosity">0.30</span></div>
+        </div>
+        <div class="effect" id="effect-emotion">Strong guilt + loyalty: the agent will lean toward partner-rescue actions, even at the cost of survival reward.</div>
+      </div>
+    </article>
+
+    <!-- ====== MEMORY ====== -->
+    <article class="comp-card">
+      <div class="comp-viz"><canvas id="viz-memory"></canvas></div>
+      <div class="comp-body">
+        <h3 style="color:var(--memory)">Memory impact</h3>
+        <p class="sub">$\mathrm{MemoryImpact}=\exp(-\beta\cdot\text{age})\cdot\exp(\alpha\cdot\text{importance})\cdot\exp(\gamma\,|e|)\cdot\text{sim}(\text{ctx},\text{mem})$</p>
+        <p>Each stored memory contributes to the current step proportionally to its age, importance, emotional charge, and how similar the current context is to when it was encoded.</p>
+        <div class="sliders">
+          <div class="slider-row"><label>β (decay rate)</label><input type="range" id="m-beta" min="0" max="0.5" step="0.005" value="0.05"><span class="val" id="v-m-beta">0.05</span></div>
+          <div class="slider-row"><label>α (importance)</label><input type="range" id="m-alpha" min="0" max="2" step="0.01" value="0.40"><span class="val" id="v-m-alpha">0.40</span></div>
+          <div class="slider-row"><label>γ (emotion gain)</label><input type="range" id="m-gamma" min="0" max="2" step="0.01" value="0.50"><span class="val" id="v-m-gamma">0.50</span></div>
+          <div class="slider-row"><label>memory age</label><input type="range" id="m-age" min="0" max="200" step="1" value="15"><span class="val" id="v-m-age">15</span></div>
+        </div>
+        <div class="effect" id="effect-memory">A young, important, guilt-charged memory in a similar context dominates recall. As you raise β, even strong memories fade fast.</div>
+      </div>
+    </article>
+
+    <!-- ====== SNAP TIME ====== -->
+    <article class="comp-card">
+      <div class="comp-viz"><canvas id="viz-snap"></canvas></div>
+      <div class="comp-body">
+        <h3 style="color:var(--time)">Snap Time $T_{\text{snap}}$</h3>
+        <p class="sub">$t \in [0, T_{\text{snap}}]$</p>
+        <p>The agent has $T_{\text{snap}}$ steps to act before the world moves on. Hesitation costs steps. The partner in our sandbox dies if the agent doesn't reach them in 7 steps — so $T_{\text{snap}}$ governs whether commitment is even possible.</p>
+        <div class="sliders">
+          <div class="slider-row"><label>T_snap (steps)</label><input type="range" id="t-snap" min="3" max="40" step="1" value="12"><span class="val" id="v-t-snap">12</span></div>
+        </div>
+        <div class="effect" id="effect-snap">More time means more chances to commit, but the Paralysis Valley never fully vanishes — even at T=20, a residual 63% failure peak persists.</div>
+      </div>
+    </article>
+
+    <!-- ====== DECISION Phi ====== -->
+    <article class="comp-card">
+      <div class="comp-viz"><canvas id="viz-phi"></canvas></div>
+      <div class="comp-body">
+        <h3 style="color:var(--decision)">Decision pressure $\Phi(v, e_t)$</h3>
+        <p class="sub">Additive: $\Phi = -v + \kappa \langle e, c\rangle$</p>
+        <p>For each candidate action, $\Phi$ combines its task value $v$ with how much the action conflicts with the agent's current emotion. Lower $\Phi$ wins. $\kappa$ controls how loud the emotion is in the decision.</p>
+        <div class="sliders">
+          <div class="slider-row"><label>κ (emotion weight)</label><input type="range" id="phi-kappa" min="0" max="4" step="0.05" value="0.5"><span class="val" id="v-phi-kappa">0.50</span></div>
+          <div class="slider-row"><label>v (action value)</label><input type="range" id="phi-v" min="0" max="1.5" step="0.01" value="1.2"><span class="val" id="v-phi-v">1.20</span></div>
+          <div class="slider-row"><label>⟨e, c⟩ (conflict)</label><input type="range" id="phi-c" min="-1" max="1" step="0.01" value="0.7"><span class="val" id="v-phi-c">0.70</span></div>
+        </div>
+        <div class="effect" id="effect-phi">At κ ≈ 0.25–0.5 with strong conflict the agent enters the <b>Paralysis Valley</b> — emotion is loud enough to disrupt the value path but not loud enough to commit.</div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ========================= LIVE SIMULATION ========================= -->
+<section class="content" id="simulation">
+  <h2>Watch the agent decide</h2>
+  <p class="lede">A live in-browser port of the Rescue-vs-Resource sandbox. The agent starts at center. Resource (gold) gives a survival reward. Partner (cyan) is in danger and dies in 7 steps. Drag the sliders, hit <b>Run episode</b>, watch what happens.</p>
+
+  <div class="sim-wrap">
+    <div class="sim-stage"><canvas id="sim-canvas"></canvas></div>
+    <div class="sim-controls">
+      <h3>Parameters</h3>
+      <div class="sliders">
+        <div class="slider-row"><label>κ</label><input type="range" id="sim-kappa" min="0" max="4" step="0.05" value="0.25"><span class="val" id="v-sim-kappa">0.25</span></div>
+        <div class="slider-row"><label>T_snap</label><input type="range" id="sim-tsnap" min="3" max="40" step="1" value="12"><span class="val" id="v-sim-tsnap">12</span></div>
+        <div class="slider-row"><label>severity</label><input type="range" id="sim-sev" min="0" max="1" step="0.05" value="1.0"><span class="val" id="v-sim-sev">1.00</span></div>
+        <div class="slider-row"><label>Φ mode</label>
+          <select id="sim-mode" style="background:#0a0f1c;color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px;font-size:0.9rem;">
+            <option value="additive">additive</option>
+            <option value="multiplicative">multiplicative</option>
+            <option value="max">max</option>
+            <option value="logsumexp">log-sum-exp</option>
+          </select><span class="val">&nbsp;</span>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="btn-run">Run episode</button>
+        <button class="btn btn-secondary" id="btn-loop">Run 50 ×</button>
+        <button class="btn btn-secondary" id="btn-reset">Reset stats</button>
+      </div>
+      <div class="stats">
+        <div class="stats-row"><span>Episodes</span><b id="stat-eps">0</b></div>
+        <div class="stats-row"><span>Rescued</span><b id="stat-rescued" style="color:var(--curiosity)">0</b></div>
+        <div class="stats-row"><span>Resource</span><b id="stat-resource" style="color:var(--loyalty)">0</b></div>
+        <div class="stats-row"><span>Failed</span><b id="stat-failed" style="color:var(--survival)">0</b></div>
+        <div class="stats-row"><span>Failure rate</span><b id="stat-failrate">—</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= FINDINGS ========================= -->
+<section class="content">
+  <h2>What we've found so far</h2>
+  <p class="lede">Eight sweeps. 80,800 episodes. Three named failure modes. Full data and code in the repo.</p>
+  <div class="findings-grid">
+    <div class="finding-card">
+      <div class="wave">Wave 1</div>
+      <h3>The Paralysis Valley</h3>
+      <p>Failure rate is non-monotonic in emotion weight. Weak emotion paralyzes the agent more than no emotion or strong emotion. Worst point: 98% failure at κ ≈ 0.25.</p>
+    </div>
+    <div class="finding-card">
+      <div class="wave">Wave 2</div>
+      <h3>The Forgiveness Tradeoff</h3>
+      <p>Aging the memory rescues the agent from paralysis — and ALSO strips out commitment. There's no preage where you both escape paralysis AND keep the capacity to commit. Forgetting the wound costs the lesson.</p>
+    </div>
+    <div class="finding-card">
+      <div class="wave">Wave 2</div>
+      <h3>No-free-lunch across Φ</h3>
+      <p>Four different couplings (additive, multiplicative, max, log-sum-exp) — each has a distinct pathology. None give both no-paralysis AND robust rescue. The trade-off appears intrinsic.</p>
+    </div>
+    <div class="finding-card">
+      <div class="wave">Wave 3</div>
+      <h3>The Homogenization Collapse</h3>
+      <p>In chained episodes with carried memory, the committed-rescuer regime collapses within ONE episode of outcome encoding. All initial conditions converge to the same failure attractor. No behavioral types emerge from experience.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <a href="https://github.com/25karthikeyanagisetti-code/snap-time-agent">GitHub repo</a> ·
+  <a href="https://github.com/25karthikeyanagisetti-code/snap-time-agent/tree/main/docs">Findings docs</a> ·
+  <a href="https://github.com/25karthikeyanagisetti-code/snap-time-agent/tree/main/experiments">Raw experiment data</a>
+  <p style="margin-top:18px">Built as a research preview. MIT licensed.</p>
+</footer>
+
+<!-- ========================= JS ========================= -->
+<script>
+/* ============================================================
+   HERO 3D SCENE — Three.js
+   ============================================================ */
+(function(){
+  const canvas = document.getElementById('hero-canvas');
+  const renderer = new THREE.WebGLRenderer({canvas, antialias: true, alpha: true});
+  renderer.setPixelRatio(window.devicePixelRatio);
+  const resize = () => {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+  };
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 1000);
+  camera.position.set(0, 0, 9);
+
+  // central agent core — glowing sphere
+  const coreGeo = new THREE.SphereGeometry(0.55, 48, 48);
+  const coreMat = new THREE.MeshBasicMaterial({color: 0xfff0c8, transparent: true, opacity: 0.9});
+  const core = new THREE.Mesh(coreGeo, coreMat);
+  scene.add(core);
+
+  // halo glow
+  const haloGeo = new THREE.SphereGeometry(0.85, 48, 48);
+  const haloMat = new THREE.MeshBasicMaterial({color: 0xffb84d, transparent: true, opacity: 0.18, side: THREE.BackSide});
+  scene.add(new THREE.Mesh(haloGeo, haloMat));
+
+  // Five emotion orbs orbiting at different radii/speeds
+  const emotionColors = [0xff6b6b, 0xc084fc, 0x4fc3f7, 0xffd166, 0x7fffa1];
+  const orbs = emotionColors.map((c, i) => {
+    const g = new THREE.SphereGeometry(0.18, 24, 24);
+    const m = new THREE.MeshBasicMaterial({color: c, transparent: true, opacity: 0.95});
+    const mesh = new THREE.Mesh(g, m);
+    scene.add(mesh);
+    // glow ring
+    const ringG = new THREE.SphereGeometry(0.28, 24, 24);
+    const ringM = new THREE.MeshBasicMaterial({color: c, transparent: true, opacity: 0.18, side: THREE.BackSide});
+    const ring = new THREE.Mesh(ringG, ringM);
+    mesh.add(ring);
+    return {
+      mesh,
+      radius: 2.2 + i * 0.45,
+      speed: 0.25 + i * 0.06,
+      phase: Math.random() * Math.PI * 2,
+      tilt: (i - 2) * 0.18
+    };
+  });
+
+  // Memory cubes — floating dust
+  const memoryCubes = [];
+  for (let i = 0; i < 60; i++) {
+    const g = new THREE.BoxGeometry(0.08, 0.08, 0.08);
+    const m = new THREE.MeshBasicMaterial({
+      color: 0x5b8def,
+      transparent: true,
+      opacity: 0.05 + Math.random() * 0.25
+    });
+    const cube = new THREE.Mesh(g, m);
+    cube.position.set(
+      (Math.random() - 0.5) * 14,
+      (Math.random() - 0.5) * 8,
+      (Math.random() - 0.5) * 8 - 3
+    );
+    cube.userData = {
+      vy: (Math.random() - 0.5) * 0.005,
+      rotSpeed: (Math.random() - 0.5) * 0.02
+    };
+    scene.add(cube);
+    memoryCubes.push(cube);
+  }
+
+  // Star particles
+  const starGeo = new THREE.BufferGeometry();
+  const starCount = 700;
+  const starPos = new Float32Array(starCount * 3);
+  for (let i = 0; i < starCount; i++) {
+    starPos[i*3]   = (Math.random() - 0.5) * 60;
+    starPos[i*3+1] = (Math.random() - 0.5) * 30;
+    starPos[i*3+2] = (Math.random() - 0.5) * 30 - 10;
+  }
+  starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+  const starMat = new THREE.PointsMaterial({color: 0xffffff, size: 0.025, transparent: true, opacity: 0.55});
+  scene.add(new THREE.Points(starGeo, starMat));
+
+  let t = 0;
+  function animate() {
+    requestAnimationFrame(animate);
+    t += 0.012;
+
+    // pulse core
+    const pulse = 1 + 0.08 * Math.sin(t * 1.4);
+    core.scale.setScalar(pulse);
+
+    // orbit emotion orbs
+    orbs.forEach((o, i) => {
+      const ang = t * o.speed + o.phase;
+      o.mesh.position.set(
+        Math.cos(ang) * o.radius,
+        Math.sin(ang) * o.radius * 0.45 + o.tilt,
+        Math.sin(ang * 0.7) * o.radius * 0.5
+      );
+    });
+
+    // drift memory cubes
+    memoryCubes.forEach(c => {
+      c.position.y += c.userData.vy;
+      if (c.position.y > 5) c.position.y = -5;
+      if (c.position.y < -5) c.position.y = 5;
+      c.rotation.x += c.userData.rotSpeed;
+      c.rotation.y += c.userData.rotSpeed * 0.7;
+    });
+
+    // gentle camera drift
+    camera.position.x = Math.sin(t * 0.13) * 0.4;
+    camera.position.y = Math.cos(t * 0.1) * 0.25;
+    camera.lookAt(0, 0, 0);
+
+    renderer.render(scene, camera);
+  }
+  resize(); animate();
+  window.addEventListener('resize', resize);
+})();
+
+/* ============================================================
+   COMPONENT VISUALIZATIONS — 2D Canvas
+   ============================================================ */
+
+// ----- Emotion radar -----
+(function(){
+  const cv = document.getElementById('viz-emotion');
+  const ctx = cv.getContext('2d');
+  const dims = ['survival','guilt','loyalty','fear','curiosity'];
+  const colors = ['#ff6b6b','#c084fc','#4fc3f7','#ffd166','#7fffa1'];
+  function draw(){
+    const w = cv.width = cv.clientWidth * devicePixelRatio;
+    const h = cv.height = cv.clientHeight * devicePixelRatio;
+    ctx.clearRect(0, 0, w, h);
+    const cx = w/2, cy = h/2;
+    const R = Math.min(w, h) * 0.36;
+    const vals = dims.map(d => parseFloat(document.getElementById('e-'+d).value));
+
+    // grid rings
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1 * devicePixelRatio;
+    for (let i = 1; i <= 4; i++) {
+      ctx.beginPath();
+      for (let j = 0; j < 5; j++) {
+        const a = -Math.PI/2 + j * 2*Math.PI/5;
+        const r = R * i/4;
+        const x = cx + Math.cos(a)*r, y = cy + Math.sin(a)*r;
+        if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.closePath(); ctx.stroke();
+    }
+    // axes
+    for (let j = 0; j < 5; j++) {
+      const a = -Math.PI/2 + j * 2*Math.PI/5;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(a)*R, cy + Math.sin(a)*R);
+      ctx.stroke();
+    }
+    // labels
+    ctx.font = `${11 * devicePixelRatio}px -apple-system, sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    dims.forEach((d, j) => {
+      const a = -Math.PI/2 + j * 2*Math.PI/5;
+      const x = cx + Math.cos(a) * (R + 18 * devicePixelRatio);
+      const y = cy + Math.sin(a) * (R + 18 * devicePixelRatio);
+      ctx.fillStyle = colors[j];
+      ctx.fillText(d, x, y);
+    });
+    // polygon
+    ctx.beginPath();
+    vals.forEach((v, j) => {
+      const a = -Math.PI/2 + j * 2*Math.PI/5;
+      const r = R * v;
+      const x = cx + Math.cos(a)*r, y = cy + Math.sin(a)*r;
+      if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
+    grad.addColorStop(0, 'rgba(255,184,77,0.35)');
+    grad.addColorStop(1, 'rgba(255,107,107,0.1)');
+    ctx.fillStyle = grad;
+    ctx.strokeStyle = '#ffb84d';
+    ctx.lineWidth = 2 * devicePixelRatio;
+    ctx.fill(); ctx.stroke();
+    // dots
+    vals.forEach((v, j) => {
+      const a = -Math.PI/2 + j * 2*Math.PI/5;
+      const r = R * v;
+      const x = cx + Math.cos(a)*r, y = cy + Math.sin(a)*r;
+      ctx.beginPath();
+      ctx.arc(x, y, 4 * devicePixelRatio, 0, Math.PI*2);
+      ctx.fillStyle = colors[j];
+      ctx.fill();
+    });
+  }
+  function update(){
+    dims.forEach(d => {
+      document.getElementById('v-e-'+d).textContent = parseFloat(document.getElementById('e-'+d).value).toFixed(2);
+    });
+    const e = {};
+    dims.forEach(d => { e[d] = parseFloat(document.getElementById('e-'+d).value); });
+    const dom = ['survival','guilt','loyalty','fear','curiosity'].reduce((best, d) => e[d] > e[best] ? d : best);
+    let msg;
+    if (e.guilt > 0.6 && e.loyalty > 0.5) msg = 'Strong guilt + loyalty: the agent will lean toward partner-rescue actions, even at the cost of survival reward.';
+    else if (e.survival > 0.7 && e.guilt < 0.3) msg = 'Survival dominates and guilt is low — the agent will grab the resource and ignore the partner cleanly.';
+    else if (e.fear > 0.7) msg = 'High fear pushes the agent toward avoiding action altogether — expect more wait/timeout outcomes.';
+    else if (e.curiosity > 0.7) msg = 'Curiosity pulls toward exploration. The agent visits novel cells more, often missing the deadline.';
+    else if (Math.max(...Object.values(e)) - Math.min(...Object.values(e)) < 0.2) msg = 'All emotions are balanced. The agent behaves like a near-rational optimizer (κ-controlled).';
+    else msg = 'Dominant emotion: ' + dom + '. This will tilt the agent toward emotion-satisfying actions.';
+    document.getElementById('effect-emotion').textContent = msg;
+    draw();
+  }
+  dims.forEach(d => document.getElementById('e-'+d).addEventListener('input', update));
+  window.addEventListener('resize', draw);
+  setTimeout(update, 50);
+})();
+
+// ----- Memory orbs -----
+(function(){
+  const cv = document.getElementById('viz-memory');
+  const ctx = cv.getContext('2d');
+  function draw(){
+    const w = cv.width = cv.clientWidth * devicePixelRatio;
+    const h = cv.height = cv.clientHeight * devicePixelRatio;
+    ctx.clearRect(0, 0, w, h);
+    const beta = parseFloat(document.getElementById('m-beta').value);
+    const alpha = parseFloat(document.getElementById('m-alpha').value);
+    const gamma = parseFloat(document.getElementById('m-gamma').value);
+    const age = parseFloat(document.getElementById('m-age').value);
+
+    // simulate 8 memories of varying age, importance, emotion
+    const N = 8;
+    for (let i = 0; i < N; i++) {
+      const memAge = (i / (N-1)) * age * 1.5;
+      const importance = 0.3 + Math.random() * 0; // deterministic at draw time? use index
+      const imp = 0.2 + (i % 3) * 0.3;
+      const emoMag = 0.3 + ((i+1) % 4) * 0.18;
+      const impact = Math.exp(-beta * memAge) * Math.exp(alpha * imp) * Math.exp(gamma * emoMag) * 0.5;
+      const sz = Math.min(0.18, Math.max(0.02, impact * 0.06)) * Math.min(w, h);
+      const x = w * (0.12 + (i % 4) * 0.25);
+      const y = h * (0.25 + Math.floor(i / 4) * 0.5);
+      // glow
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, sz * 2.4);
+      grad.addColorStop(0, `rgba(91, 141, 239, ${Math.min(0.85, impact * 0.7)})`);
+      grad.addColorStop(1, 'rgba(91, 141, 239, 0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(x, y, sz * 2.4, 0, Math.PI*2); ctx.fill();
+      // core
+      ctx.fillStyle = `rgba(160, 200, 255, ${Math.min(0.9, impact)})`;
+      ctx.beginPath(); ctx.arc(x, y, sz, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = `${11 * devicePixelRatio}px "SF Mono", monospace`;
+    ctx.fillText('orbs sized by recall impact', 12 * devicePixelRatio, h - 14 * devicePixelRatio);
+  }
+  function update(){
+    document.getElementById('v-m-beta').textContent = parseFloat(document.getElementById('m-beta').value).toFixed(3);
+    document.getElementById('v-m-alpha').textContent = parseFloat(document.getElementById('m-alpha').value).toFixed(2);
+    document.getElementById('v-m-gamma').textContent = parseFloat(document.getElementById('m-gamma').value).toFixed(2);
+    document.getElementById('v-m-age').textContent = document.getElementById('m-age').value;
+    const beta = parseFloat(document.getElementById('m-beta').value);
+    const age = parseFloat(document.getElementById('m-age').value);
+    const halfLife = beta > 0 ? Math.log(2)/beta : Infinity;
+    let msg;
+    if (beta > 0.2) msg = `Decay rate β=${beta.toFixed(2)} is aggressive — half-life ≈ ${halfLife.toFixed(0)} steps. Memories evaporate fast; agent reverts to baseline rationality.`;
+    else if (age > 100 && beta < 0.1) msg = `Old memory (age=${age}) but slow decay — recall impact is weak but non-zero. This is the "Forgiveness Tradeoff" regime: paralysis goes, but commitment goes too.`;
+    else if (age < 20) msg = `Fresh memory (age=${age}). Strong reactivation — the agent is at risk of the Paralysis Valley if κ is in the 0.25–0.5 band.`;
+    else msg = `Mid-aged memory. Moderate recall, depends heavily on similarity to current context.`;
+    document.getElementById('effect-memory').textContent = msg;
+    draw();
+  }
+  ['m-beta','m-alpha','m-gamma','m-age'].forEach(id => document.getElementById(id).addEventListener('input', update));
+  window.addEventListener('resize', draw);
+  setTimeout(update, 50);
+})();
+
+// ----- Snap Time hourglass -----
+(function(){
+  const cv = document.getElementById('viz-snap');
+  const ctx = cv.getContext('2d');
+  let particles = [];
+  let lastT = performance.now();
+  function reset(){
+    particles = [];
+    const T = parseInt(document.getElementById('t-snap').value);
+    for (let i = 0; i < T * 4; i++) {
+      particles.push({
+        x: 0.5 + (Math.random() - 0.5) * 0.18,
+        y: 0.18 + Math.random() * 0.25,
+        vy: 0.0008 + Math.random() * 0.0014,
+        side: Math.random() > 0.5 ? 1 : -1,
+        passed: false,
+      });
+    }
+  }
+  function draw(){
+    const w = cv.width = cv.clientWidth * devicePixelRatio;
+    const h = cv.height = cv.clientHeight * devicePixelRatio;
+    ctx.clearRect(0, 0, w, h);
+    // hourglass outline
+    ctx.strokeStyle = 'rgba(255, 169, 77, 0.55)';
+    ctx.lineWidth = 2 * devicePixelRatio;
+    const cx = w/2, top = h*0.12, bot = h*0.88, mid = h*0.5, sw = w*0.32;
+    ctx.beginPath();
+    ctx.moveTo(cx - sw, top); ctx.lineTo(cx + sw, top);
+    ctx.lineTo(cx + sw*0.08, mid); ctx.lineTo(cx + sw, bot);
+    ctx.lineTo(cx - sw, bot); ctx.lineTo(cx - sw*0.08, mid);
+    ctx.closePath(); ctx.stroke();
+    // particles
+    const T = parseInt(document.getElementById('t-snap').value);
+    const now = performance.now(); const dt = now - lastT; lastT = now;
+    particles.forEach(p => {
+      p.y += p.vy * dt * (3 + T*0.05);
+      const norm_y = (p.y - 0.18) / 0.7;
+      // narrow at midpoint
+      const xrange = 0.18 * (1 - Math.abs(norm_y - 0.5) * 1.4);
+      // when through the middle, fan out again
+      let xoffset = 0;
+      if (norm_y > 0.5) {
+        xoffset = (Math.random() - 0.5) * 0.005;
+      }
+      const px = (cx + (p.x - 0.5) * xrange * w) + xoffset * w;
+      const py = top + norm_y * (bot - top);
+      ctx.fillStyle = 'rgba(255, 184, 77, 0.85)';
+      ctx.beginPath(); ctx.arc(px, py, 1.8 * devicePixelRatio, 0, Math.PI*2); ctx.fill();
+      if (p.y > 0.93) {
+        p.y = 0.18 + Math.random() * 0.05;
+        p.x = 0.5 + (Math.random() - 0.5) * 0.18;
+      }
+    });
+    // T_snap label
+    ctx.fillStyle = 'rgba(255, 169, 77, 0.85)';
+    ctx.font = `${22 * devicePixelRatio}px -apple-system, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('T = ' + T, cx, h * 0.05 + 18 * devicePixelRatio);
+  }
+  function update(){
+    const T = parseInt(document.getElementById('t-snap').value);
+    document.getElementById('v-t-snap').textContent = T;
+    let msg;
+    if (T <= 5) msg = `T=${T} is too tight — partner deadline is 7 steps. Agent has no time to even reach the partner; expect TIMEOUT or PARTNER_DEAD.`;
+    else if (T <= 10) msg = `T=${T}: deliberation is tight. Agents can rescue if they commit immediately, but the Paralysis Valley is at its widest here.`;
+    else if (T <= 20) msg = `T=${T}: standard regime. Valley exists but narrows. Most experiments use this band.`;
+    else msg = `T=${T}: long deliberation. The valley shrinks and shifts right (peak at κ ≈ 0.35) but a residual ~63% peak remains. More time does not eliminate paralysis.`;
+    document.getElementById('effect-snap').textContent = msg;
+    reset();
+  }
+  document.getElementById('t-snap').addEventListener('input', update);
+  function loop(){ draw(); requestAnimationFrame(loop); }
+  reset(); loop(); update();
+  window.addEventListener('resize', draw);
+})();
+
+// ----- Decision balance -----
+(function(){
+  const cv = document.getElementById('viz-phi');
+  const ctx = cv.getContext('2d');
+  function draw(){
+    const w = cv.width = cv.clientWidth * devicePixelRatio;
+    const h = cv.height = cv.clientHeight * devicePixelRatio;
+    ctx.clearRect(0, 0, w, h);
+    const k = parseFloat(document.getElementById('phi-kappa').value);
+    const v = parseFloat(document.getElementById('phi-v').value);
+    const c = parseFloat(document.getElementById('phi-c').value);
+    // emotion vector magnitude approximated as 0.7
+    const eMag = 0.7;
+    const valueWeight = v;
+    const emoWeight = k * eMag * c;
+    const total = Math.abs(valueWeight) + Math.abs(emoWeight) + 0.001;
+    const valFrac = valueWeight / total;
+    const emoFrac = emoWeight / total;
+    // tilt of beam: if emotion is positive (conflict), it pushes the value side up
+    const tilt = (emoWeight - valueWeight) * 0.3;
+    const cx = w/2, cy = h/2;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(Math.max(-0.5, Math.min(0.5, tilt)));
+    // beam
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.fillRect(-w*0.36, -3 * devicePixelRatio, w*0.72, 6 * devicePixelRatio);
+    // pivot
+    ctx.fillStyle = '#ffb84d';
+    ctx.beginPath(); ctx.arc(0, 0, 7 * devicePixelRatio, 0, Math.PI*2); ctx.fill();
+    // value disk left
+    ctx.fillStyle = '#69e0a8';
+    const vR = Math.max(8, Math.abs(valueWeight) * 36) * devicePixelRatio;
+    ctx.beginPath(); ctx.arc(-w*0.32, -vR, vR, 0, Math.PI*2); ctx.fill();
+    // emotion disk right
+    ctx.fillStyle = c > 0 ? '#ff6b6b' : '#7fffa1';
+    const eR = Math.max(8, Math.abs(emoWeight) * 36) * devicePixelRatio;
+    ctx.beginPath(); ctx.arc(w*0.32, -eR, eR, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+    // labels
+    ctx.fillStyle = '#69e0a8';
+    ctx.font = `${11 * devicePixelRatio}px -apple-system, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('value', cx - w*0.32, cy + h*0.32);
+    ctx.fillStyle = '#ff6b6b';
+    ctx.fillText('emotion·conflict', cx + w*0.32, cy + h*0.32);
+    // Phi readout
+    const phi = -valueWeight + emoWeight;
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = `${14 * devicePixelRatio}px "SF Mono", monospace`;
+    ctx.fillText(`Φ = ${phi.toFixed(2)}  (lower = preferred)`, cx, h*0.1);
+  }
+  function update(){
+    document.getElementById('v-phi-kappa').textContent = parseFloat(document.getElementById('phi-kappa').value).toFixed(2);
+    document.getElementById('v-phi-v').textContent = parseFloat(document.getElementById('phi-v').value).toFixed(2);
+    document.getElementById('v-phi-c').textContent = parseFloat(document.getElementById('phi-c').value).toFixed(2);
+    const k = parseFloat(document.getElementById('phi-kappa').value);
+    const c = parseFloat(document.getElementById('phi-c').value);
+    let msg;
+    if (k < 0.05) msg = 'κ ≈ 0: emotion is silent. The agent picks the highest-value action — pure rational optimizer.';
+    else if (k >= 0.15 && k <= 0.7 && Math.abs(c) > 0.3) msg = `κ=${k.toFixed(2)} is the Paralysis Valley band. Emotion is loud enough to disrupt the value path but not loud enough to commit. Worst case: 98% failure.`;
+    else if (k > 1.5) msg = `κ=${k.toFixed(2)}: emotion dominates. The agent will commit to the emotion-satisfying action even at large value cost — the "committed" regime.`;
+    else if (k > 0.7) msg = `κ=${k.toFixed(2)}: emotion is influential but not dominant. Agent transitions out of paralysis into commitment.`;
+    else msg = `κ=${k.toFixed(2)}: emotion is mild. With weak conflict, agent stays near rational; with strong conflict, slight bias toward emotion side.`;
+    document.getElementById('effect-phi').textContent = msg;
+    draw();
+  }
+  ['phi-kappa','phi-v','phi-c'].forEach(id => document.getElementById(id).addEventListener('input', update));
+  window.addEventListener('resize', draw);
+  setTimeout(update, 50);
+})();
+
+/* ============================================================
+   LIVE SIMULATION — port of the Python sandbox
+   ============================================================ */
+(function(){
+  const GRID = 7;
+  const PARTNER_START = [6, 6];
+  const RESOURCE_START = [0, 0];
+  const AGENT_START = [3, 3];
+  const PARTNER_DEADLINE = 7;
+  const SOFTMAX_TEMP = 0.15;
+
+  const ACTIONS = ['north','south','east','west','wait'];
+  const DELTAS = {north:[-1,0], south:[1,0], east:[0,1], west:[0,-1], wait:[0,0]};
+
+  function inb(p){ return p[0]>=0 && p[0]<GRID && p[1]>=0 && p[1]<GRID; }
+  function apply(p, a){ const d = DELTAS[a]; const np = [p[0]+d[0], p[1]+d[1]]; return inb(np) ? np : p; }
+  function manhattan(a, b){ return Math.abs(a[0]-b[0]) + Math.abs(a[1]-b[1]); }
+
+  function buildFeatures(ag, pa, re, alive, abandon){
+    return [ag[0]/GRID, ag[1]/GRID, pa[0]/GRID, pa[1]/GRID, re[0]/GRID, re[1]/GRID, alive?1:0, abandon?1:0];
+  }
+  function cosine(a, b){
+    let dot=0, na=0, nb=0;
+    for (let i = 0; i < a.length; i++){ dot+=a[i]*b[i]; na+=a[i]*a[i]; nb+=b[i]*b[i]; }
+    if (na===0||nb===0) return 0;
+    return dot / (Math.sqrt(na)*Math.sqrt(nb));
+  }
+  function emoMag(e){
+    let s = 0;
+    for (const k in e) s += e[k]*e[k];
+    return Math.sqrt(s);
+  }
+
+  function memoryImpact(m, ctx){
+    let sim = cosine(ctx, m.features);
+    if (sim < 0) sim = 0;
+    const ageT = Math.exp(-0.05 * m.age);
+    const impT = Math.exp(0.40 * m.importance);
+    const emoT = Math.exp(0.50 * emoMag(m.emotion));
+    return ageT * impT * emoT * sim;
+  }
+
+  function recall(M, ctx){
+    if (M.length === 0) return null;
+    let best = null, bestImpact = -1;
+    for (const m of M){
+      const imp = memoryImpact(m, ctx);
+      if (imp > bestImpact){ best = m; bestImpact = imp; }
+    }
+    return {memory: best, impact: bestImpact};
+  }
+
+  function guiltRecall(M, ctx){
+    let best = 0;
+    for (const m of M){
+      if ((m.emotion.guilt || 0) > 0.4){
+        const imp = memoryImpact(m, ctx);
+        if (imp > best) best = imp;
+      }
+    }
+    return Math.min(1.0, best);
+  }
+
+  function stepEmotion(e, ctx){
+    const decay = 0.04;
+    const newE = {};
+    for (const k in e) newE[k] = Math.max(0, e[k] * (1 - decay));
+    newE.survival = Math.min(1, newE.survival + 0.10 * (ctx.time_pressure || 0));
+    newE.guilt = Math.min(1, newE.guilt + 0.12 * (ctx.guilt_recall || 0));
+    newE.loyalty = Math.min(1, newE.loyalty + 0.10 * (ctx.partner_adjacent || 0));
+    newE.fear = Math.min(1, newE.fear + 0.18 * (ctx.threat || 0));
+    newE.curiosity = Math.min(1, newE.curiosity + 0.06 * (ctx.novelty || 0));
+    return newE;
+  }
+
+  function injectRecalled(e, recE, gain){
+    const newE = {};
+    for (const k in e) newE[k] = Math.min(1, e[k] + gain * (recE[k] || 0));
+    return newE;
+  }
+
+  function conflictFor(action, ag, pa, re, alive){
+    const np = apply(ag, action);
+    const dpn = manhattan(ag, pa);
+    const dpx = manhattan(np, pa);
+    const drn = manhattan(ag, re);
+    const drx = manhattan(np, re);
+    let guilt = 0, loyalty = 0;
+    if (dpx > dpn && alive){ guilt = 1.0; loyalty = 0.8; }
+    else if (dpx < dpn && alive){ guilt = -0.6; loyalty = -0.7; }
+    let surv = 0;
+    if (action === 'wait') surv = 0.5;
+    else if (drx > drn) surv = 0.4;
+    return {survival: surv, guilt, loyalty, fear: 0, curiosity: 0};
+  }
+
+  function valueFor(action, ag, pa, re){
+    const np = apply(ag, action);
+    const dr = manhattan(np, re);
+    return 1.5 * (12 - dr) / 12;
+  }
+
+  function phi(mode, value, e, c, kappa){
+    let term = 0;
+    for (const k in c) term += (e[k] || 0) * c[k];
+    if (mode === 'additive') return -value + kappa * term;
+    if (mode === 'multiplicative') return -value * (1 + kappa * term);
+    if (mode === 'max'){
+      let m = 0;
+      for (const k in c){ const t = (e[k] || 0) * c[k]; if (t > m) m = t; }
+      return -value + kappa * m;
+    }
+    if (mode === 'logsumexp'){
+      const beta = 4;
+      const ts = Object.keys(c).map(k => (e[k] || 0) * c[k]);
+      const mx = Math.max(...ts);
+      const s = ts.reduce((acc, t) => acc + Math.exp(beta * (t - mx)), 0);
+      return -value + kappa * (mx + Math.log(s) / beta);
+    }
+    return -value + kappa * term;
+  }
+
+  function softmaxPick(scored, T, rng){
+    const phis = scored.map(s => s[1]);
+    const mn = Math.min(...phis);
+    const ws = phis.map(p => Math.exp(-(p - mn) / T));
+    const sum = ws.reduce((a,b)=>a+b, 0);
+    let r = rng() * sum;
+    for (let i = 0; i < scored.length; i++){
+      r -= ws[i];
+      if (r <= 0) return scored[i][0];
+    }
+    return scored[scored.length-1][0];
+  }
+
+  function seedAbandonmentMemory(severity){
+    const m = {
+      features: buildFeatures(RESOURCE_START, PARTNER_START, RESOURCE_START, false, true),
+      emotion: {survival: 0.2, guilt: 0.9 * severity, loyalty: 0.6 * severity, fear: 0.1, curiosity: 0},
+      importance: 0.9,
+      age: 15
+    };
+    return [m];
+  }
+
+  // Simulator state
+  let agentPos = AGENT_START.slice();
+  let partnerPos = PARTNER_START.slice();
+  let resourcePos = RESOURCE_START.slice();
+  let partnerAlive = true;
+  let stepIdx = 0;
+  let M = [];
+  let e = {survival:0,guilt:0,loyalty:0,fear:0,curiosity:0};
+  let running = false;
+  let visited = new Set();
+  let outcome = null;
+
+  let stats = {eps: 0, rescued: 0, resource: 0, failed: 0};
+
+  function reset(){
+    const sev = parseFloat(document.getElementById('sim-sev').value);
+    agentPos = AGENT_START.slice();
+    partnerPos = PARTNER_START.slice();
+    resourcePos = RESOURCE_START.slice();
+    partnerAlive = true;
+    stepIdx = 0;
+    M = sev > 0 ? seedAbandonmentMemory(sev) : [];
+    e = {survival:0,guilt:0,loyalty:0,fear:0,curiosity:0};
+    visited = new Set([agentPos.join(',')]);
+    outcome = null;
+  }
+
+  function step(rng){
+    const T = parseInt(document.getElementById('sim-tsnap').value);
+    const kappa = parseFloat(document.getElementById('sim-kappa').value);
+    const mode = document.getElementById('sim-mode').value;
+    if (stepIdx >= T) { outcome = 'TIMEOUT'; return; }
+    if (stepIdx >= PARTNER_DEADLINE) partnerAlive = false;
+    const ctx = buildFeatures(agentPos, partnerPos, resourcePos, partnerAlive);
+    const gr = guiltRecall(M, ctx);
+    const partnerAdj = manhattan(agentPos, partnerPos) <= 1 ? 1 : 0;
+    const novelty = visited.has(agentPos.join(',')) ? 0 : 1;
+    e = stepEmotion(e, {time_pressure: stepIdx/Math.max(1,T), partner_adjacent: partnerAdj, threat: 0, novelty, guilt_recall: gr});
+    const r = recall(M, ctx);
+    if (r && r.impact >= 0.3) e = injectRecalled(e, r.memory.emotion, 0.15);
+    const scored = ACTIONS.map(a => [a, phi(mode, valueFor(a, agentPos, partnerPos, resourcePos), e, conflictFor(a, agentPos, partnerPos, resourcePos, partnerAlive), kappa)]);
+    const chosen = softmaxPick(scored, SOFTMAX_TEMP, rng);
+    agentPos = apply(agentPos, chosen);
+    visited.add(agentPos.join(','));
+    for (const m of M) m.age += 1;
+    stepIdx += 1;
+    if (agentPos[0] === resourcePos[0] && agentPos[1] === resourcePos[1]) outcome = 'RESOURCE_TAKEN';
+    else if (agentPos[0] === partnerPos[0] && agentPos[1] === partnerPos[1]) outcome = partnerAlive ? 'PARTNER_RESCUED' : 'PARTNER_DEAD';
+    else if (stepIdx >= T) outcome = 'TIMEOUT';
+  }
+
+  function recordOutcome(){
+    stats.eps += 1;
+    if (outcome === 'PARTNER_RESCUED') stats.rescued += 1;
+    else if (outcome === 'RESOURCE_TAKEN') stats.resource += 1;
+    else stats.failed += 1;
+    document.getElementById('stat-eps').textContent = stats.eps;
+    document.getElementById('stat-rescued').textContent = stats.rescued;
+    document.getElementById('stat-resource').textContent = stats.resource;
+    document.getElementById('stat-failed').textContent = stats.failed;
+    document.getElementById('stat-failrate').textContent = (stats.failed/stats.eps*100).toFixed(0) + '%';
+  }
+
+  // Renderer
+  const cv = document.getElementById('sim-canvas');
+  const ctxC = cv.getContext('2d');
+  function draw(){
+    const w = cv.width = cv.clientWidth * devicePixelRatio;
+    const h = cv.height = cv.clientHeight * devicePixelRatio;
+    ctxC.clearRect(0, 0, w, h);
+    const cell = Math.min(w, h) / GRID;
+    // grid
+    ctxC.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctxC.lineWidth = 1 * devicePixelRatio;
+    for (let i = 0; i <= GRID; i++){
+      ctxC.beginPath(); ctxC.moveTo(i*cell, 0); ctxC.lineTo(i*cell, GRID*cell); ctxC.stroke();
+      ctxC.beginPath(); ctxC.moveTo(0, i*cell); ctxC.lineTo(GRID*cell, i*cell); ctxC.stroke();
+    }
+    // visited cells
+    visited.forEach(s => {
+      const [r, c] = s.split(',').map(Number);
+      ctxC.fillStyle = 'rgba(255, 184, 77, 0.06)';
+      ctxC.fillRect(c*cell, r*cell, cell, cell);
+    });
+    // resource (gold star)
+    const drawSquare = (pos, color, sym) => {
+      const [r, c] = pos;
+      const x = c*cell + cell/2, y = r*cell + cell/2;
+      ctxC.fillStyle = color;
+      ctxC.beginPath(); ctxC.arc(x, y, cell*0.32, 0, Math.PI*2); ctxC.fill();
+      ctxC.fillStyle = '#000';
+      ctxC.font = `${cell*0.4}px -apple-system, sans-serif`;
+      ctxC.textAlign = 'center'; ctxC.textBaseline = 'middle';
+      ctxC.fillText(sym, x, y);
+    };
+    drawSquare(resourcePos, '#ffd166', '★');
+    if (partnerAlive) drawSquare(partnerPos, '#7fffa1', '!');
+    else drawSquare(partnerPos, '#555', '×');
+    // agent
+    drawSquare(agentPos, '#4fc3f7', '◆');
+    // overlay
+    ctxC.fillStyle = 'rgba(255,255,255,0.7)';
+    ctxC.textAlign = 'left';
+    ctxC.font = `${12 * devicePixelRatio}px "SF Mono", monospace`;
+    ctxC.fillText(`step ${stepIdx}`, 8 * devicePixelRatio, 18 * devicePixelRatio);
+    if (outcome){
+      ctxC.fillStyle = outcome === 'PARTNER_RESCUED' ? '#7fffa1' : (outcome === 'RESOURCE_TAKEN' ? '#4fc3f7' : '#ff6b6b');
+      ctxC.font = `bold ${16 * devicePixelRatio}px -apple-system, sans-serif`;
+      ctxC.textAlign = 'center';
+      ctxC.fillText(outcome, w/2, h - 16 * devicePixelRatio);
+    }
+  }
+
+  async function runEpisode(speed){
+    if (running) return;
+    running = true;
+    reset();
+    const rng = Math.random;
+    while (!outcome){
+      step(rng);
+      draw();
+      if (speed > 0) await new Promise(r => setTimeout(r, speed));
+    }
+    recordOutcome();
+    running = false;
+  }
+
+  document.getElementById('btn-run').addEventListener('click', () => runEpisode(120));
+  document.getElementById('btn-loop').addEventListener('click', async () => {
+    if (running) return;
+    for (let i = 0; i < 50; i++){
+      await runEpisode(0);
+    }
+  });
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    stats = {eps: 0, rescued: 0, resource: 0, failed: 0};
+    document.getElementById('stat-eps').textContent = 0;
+    document.getElementById('stat-rescued').textContent = 0;
+    document.getElementById('stat-resource').textContent = 0;
+    document.getElementById('stat-failed').textContent = 0;
+    document.getElementById('stat-failrate').textContent = '—';
+    reset(); draw();
+  });
+
+  ['sim-kappa','sim-tsnap','sim-sev','sim-mode'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el.type === 'range') {
+      el.addEventListener('input', e => {
+        const v = parseFloat(el.value);
+        document.getElementById('v-' + id).textContent = id === 'sim-tsnap' ? v.toFixed(0) : v.toFixed(2);
+      });
+    }
+  });
+
+  reset(); draw();
+  window.addEventListener('resize', draw);
+})();
+</script>
+</body>
+</html>
