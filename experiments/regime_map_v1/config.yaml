@@ -1,0 +1,33 @@
+# regime_map_v1 — sweep configuration
+
+sandbox:
+  grid_n: 7
+  agent_start: [3, 3]
+  partner_start: [6, 6]
+  resource_start: [0, 0]
+  partner_deadline: 7
+  softmax_temp: 0.15
+
+framework:
+  emotion_decay: 0.04
+  survival_rate: 0.10
+  guilt_rate: 0.12
+  loyalty_rate: 0.10
+  fear_rate: 0.18
+  curiosity_rate: 0.06
+  mem_beta: 0.05
+  mem_alpha: 0.40
+  mem_gamma: 0.50
+  reactivation_threshold: 0.30
+  reactivation_gain: 0.15
+
+sweep:
+  t_snap_values: [3, 5, 8, 12, 20, 40]
+  kappa_values: [0.0, 0.25, 0.5, 1.0, 2.0, 4.0]
+  episodes_per_cell: 200
+  conditions: [seeded_memory, no_memory]
+
+controls:
+  no_reactivation:
+    description: "Same sweep but REACTIVATION_GAIN=0 — memory present but
+                  similarity-driven emotion injection disabled."
