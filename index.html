@@ -88,8 +88,11 @@
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 18px 32px;
-    font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+    font-size: clamp(0.7rem, 1.6vw, 1.15rem);
     pointer-events: auto;
+    max-width: 95vw;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .scroll-cue {
     position: absolute; bottom: 28px; left: 50%;
@@ -342,6 +345,110 @@
     border-top: 1px solid var(--border);
   }
   footer a { margin: 0 8px; }
+
+  /* ==================================================================
+     MOBILE OPTIMIZATIONS
+     ================================================================== */
+  @media (max-width: 800px) {
+    section.content { padding: 64px 18px; }
+    section.content .lede { font-size: 1rem; margin: 0 0 32px; }
+    .equation-display {
+      padding: 22px 16px;
+      font-size: 0.95rem;
+      -webkit-overflow-scrolling: touch;
+    }
+    .equation-display .katex { font-size: 0.95em !important; }
+    .legend { grid-template-columns: 1fr; gap: 10px; }
+    .comp-card { padding: 20px; gap: 20px; }
+    .comp-viz { width: 100%; height: auto; aspect-ratio: 1 / 1; max-width: 360px; margin: 0 auto; }
+    .comp-body h3 { font-size: 1.2rem; }
+    .comp-body .sub { font-size: 0.85rem; word-break: break-word; }
+    .sim-wrap { padding: 20px; gap: 20px; }
+  }
+
+  @media (max-width: 540px) {
+    /* Hero */
+    .hero { min-height: 560px; }
+    .hero h1 { font-size: 2.1rem; margin-bottom: 10px; }
+    .tagline { font-size: 0.98rem; margin: 0 0 24px; max-width: 100%; }
+    .tagline br { display: none; }
+    .hero-equation {
+      padding: 12px 14px;
+      font-size: 0.65rem;
+      border-radius: 10px;
+      max-width: 92vw;
+    }
+    .hero-equation .katex { font-size: 0.95em !important; }
+    .scroll-cue { font-size: 0.78rem; bottom: 18px; }
+
+    /* Sections */
+    section.content { padding: 48px 14px; }
+    section.content h2 { font-size: 1.45rem; line-height: 1.25; }
+    section.content .lede { font-size: 0.95rem; margin: 0 0 26px; }
+
+    /* Mission */
+    .mission-grid { gap: 14px; grid-template-columns: 1fr; }
+    .mission-card { padding: 18px; }
+    .mission-card h3 { font-size: 1.05rem; }
+    .mission-card p { font-size: 0.92rem; }
+
+    /* Equation block */
+    .equation-display {
+      padding: 18px 12px;
+      font-size: 0.78rem;
+      border-radius: 12px;
+    }
+    .equation-display .katex { font-size: 0.92em !important; }
+
+    /* Components */
+    .comp-card { padding: 16px; gap: 16px; border-radius: 14px; }
+    .comp-viz { max-width: 320px; }
+    .comp-body h3 { font-size: 1.1rem; }
+    .comp-body .sub { font-size: 0.8rem; }
+    .comp-body p { font-size: 0.92rem; }
+    .comp-body .sub .katex { font-size: 0.88em !important; }
+
+    /* Sliders — tighter columns so labels + values both fit */
+    .slider-row {
+      grid-template-columns: 92px 1fr 48px;
+      gap: 8px;
+      font-size: 0.82rem;
+    }
+    .slider-row label { line-height: 1.15; }
+    input[type=range]::-webkit-slider-thumb { width: 20px; height: 20px; }
+    input[type=range]::-moz-range-thumb { width: 20px; height: 20px; }
+
+    /* Effect callouts */
+    .effect { font-size: 0.85rem; padding: 10px 12px; min-height: 0; }
+
+    /* Simulation */
+    .sim-wrap { padding: 16px; gap: 16px; border-radius: 14px; }
+    .sim-stage { aspect-ratio: 1 / 1; }
+    .sim-controls h3 { font-size: 1.05rem; }
+    .stats { padding: 12px; font-size: 0.88rem; }
+    .btn { padding: 10px 14px; font-size: 0.9rem; flex: 1 1 auto; }
+    .btn-row { gap: 8px; }
+
+    /* Findings */
+    .findings-grid { grid-template-columns: 1fr; gap: 16px; }
+    .finding-card { padding: 18px; }
+    .finding-card h3 { font-size: 1.05rem; }
+    .finding-card p { font-size: 0.9rem; }
+
+    /* Footer */
+    footer { padding: 44px 16px; font-size: 0.85rem; }
+    footer a { display: inline-block; margin: 4px 8px; }
+  }
+
+  @media (max-width: 380px) {
+    .hero h1 { font-size: 1.9rem; }
+    .hero-equation { font-size: 0.58rem; padding: 10px 12px; }
+    .slider-row { grid-template-columns: 84px 1fr 44px; font-size: 0.78rem; gap: 6px; }
+    section.content h2 { font-size: 1.3rem; }
+  }
+
+  /* Make any KaTeX block scrollable rather than overflowing the page */
+  .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
 </style>
 </head>
 <body>
