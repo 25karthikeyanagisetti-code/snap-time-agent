@@ -37,7 +37,7 @@ And one cleaner sub-finding worth noting: the original Paralysis Valley has a me
 
 The pattern across the whole wave is: the framework has rich failure modes that mirror real human ones — paralysis when emotion is moderate, regression to baseline after forgetting, collapse of differentiation under cumulative memory — and the algebra ALONE is not enough to produce robust adaptive behavior. You need structural mechanisms (selective encoding, valence learning, consolidation) layered on top of the math.
 
-Across waves 1, 2, and 3 the project has now run 80,800 episodes, four control conditions, and four Φ formulations. Code, data, full sweep results in the repo: [link to GitHub repo]
+Across waves 1, 2, and 3 the project has now run 80,800 episodes, four control conditions, and four Φ formulations. Code, data, full sweep results in the repo: https://github.com/25karthikeyanagisetti-code/snap-time-agent
 
 For others working on memory-augmented agents — does this homogenization-after-experience pattern show up in your work? Or does cumulative memory differentiate your population the way I expected mine to?
 
