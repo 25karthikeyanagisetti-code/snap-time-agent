@@ -10,7 +10,6 @@ Each item is a single bullet with: `<short_name>` — one-sentence hypothesis �
 
 ## Queued
 
-- `signed_threshold_encoding` — Asymmetric gates (different τ for guilt-charged vs loyalty-charged outcomes) sort the population. Vary: τ_guilt ∈ {0.3, 0.7}, τ_loyalty ∈ {0.3, 0.7}. Measure: divergence@ep9 at κ=1.0. (Follow-up to selective_encoding null.)
 - `loyalty_importance_floor` — Reducing rescue-side encoding importance (from 0.7 toward 0) recovers the rescue-side encoding without triggering the Loyalty Boomerang. Vary: rescue_importance ∈ {0.0, 0.1, 0.3, 0.5, 0.7}. Measure: ep9 rescue rate at κ=1.0. (Follow-up to valenced_encoding boomerang.)
 - `decay_asymmetry` — Faster decay on loyalty memories than guilt memories ("forgiveness for self, not others") preserves rescue capacity over chained episodes. Vary: β_loyalty ∈ {0.05, 0.15, 0.3} with β_guilt fixed at 0.05. Measure: ep9 rescue rate at κ=1.0. (Follow-up to valenced_encoding boomerang.)
 - `prior_dilution_rate` — At high encoding-gate τ, the seeded abandonment prior dominates indefinitely. Vary: prior preage ∈ {0, 5, 15, 30, 60}. Measure: rescue@ep9 at τ=0.7. (Follow-up to selective_encoding null.)
@@ -22,8 +21,12 @@ Each item is a single bullet with: `<short_name>` — one-sentence hypothesis �
 - `noise_typology` — Different noise types (Gaussian on emotion vs uniform on Φ vs softmax temperature) have qualitatively different rescue effects. Vary: noise_target ∈ {emotion, phi, temperature}. Measure: failure rate at κ=0.5.
 - `agent_memory_seed` — Letting the agent encode its OWN early-episode memory before the seeded one shifts the valley. Vary: warmup_episodes ∈ {0, 1, 3, 5}. Measure: failure rate distribution.
 - `conflict_geometry` — A 3-objective sandbox (rescue + resource + escape) produces a different paralysis pattern than 2-objective. Build mini-sandbox; measure failure across κ.
+- `outcome_boolean_gate` — Sample failure encodings with probability p (boolean, not magnitude-gated) while always encoding rescues. Vary: p ∈ {0.1, 0.25, 0.5, 1.0}. Measure: divergence@ep9 at κ=1.0. (Follow-up to signed_threshold lockout.)
+- `outcome_importance_modulation` — Instead of thresholding *whether* to encode, scale per-outcome importance: rescue × m_l, failure × m_g. Vary: m_g ∈ {0.3, 0.6, 1.0}, m_l ∈ {0.3, 0.6, 1.0}. Measure: rescue rate trajectory.
+- `joint_outcome_intensity_filter` — Encode IF outcome=rescue OR (outcome=failure AND e_max > τ). Cleanest decoupling of "whether" from "how loud". Vary: τ ∈ {0.0, 0.3, 0.5, 0.7}. Measure: ep9 rescue rate.
 
 ## Done (most recent at top)
 
+- 2026-05-03: signed_threshold_encoding — asymmetric τ_guilt/τ_loyalty gates FAIL in opposite direction; high-τ_guilt cells collapse to 0% ep9 rescue (prior-dilution lockout), best divergence +5.1 pts (inferior to symmetric baseline).
 - 2026-05-02: valenced_encoding — bidirectional outcome encoding makes collapse WORSE, not better. ep9 rescue rate 28% (off) vs 15% (on); div@5–9 = −10 pts (on). Naming: The Loyalty Boomerang.
 - 2026-05-01: selective_encoding — magnitude-gated outcome encoding does NOT prevent the Homogenization Collapse; produces a U-shape (max divergence@ep9 = 11.5 pts at τ=0.3, 0 pts at τ≥0.5).

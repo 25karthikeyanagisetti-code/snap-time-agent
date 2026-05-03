@@ -14,3 +14,10 @@ One entry per scheduled-task run. Most recent at the bottom.
 - Headline number: ep9 rescue rate 28% (off) vs 15% (on); div@5–9 = −2.2 pts (off) vs −10.0 pts (on).
 - Files: experiments/valenced_encoding_v1/results.csv, valenced_encoding.png, finding.md
 - Follow-ups added to backlog: asymmetric importance gates, decay asymmetry.
+
+## 2026-05-03 — signed_threshold_encoding
+- Hypothesis: Asymmetric encoding gates (different τ for guilt-charged vs loyalty-charged outcomes) sort the population and preserve behavioral types at κ=1.0.
+- Result: failed in opposite direction — high τ_guilt cells collapse to 0% rescue rate by ep9 (a NEW failure mode: prior-dilution lockout); the predicted "guilt-stingy" sweet spot (G=0.7, L=0.3) is the WORST cell, not the best.
+- Headline number: ep9 rescue rate = 0.0% at both (G=0.7, L=0.3) and (G=0.7, L=0.7); best divergence@5–9 = +5.1 pts at (G=0.3, L=0.7) — INFERIOR to single-τ=0.3 baseline (+11.5 pts).
+- Files: experiments/signed_threshold_encoding_v1/README.md, results.csv, signed_threshold_encoding.png, finding.md
+- Follow-ups added to backlog: outcome-class boolean gate; per-outcome importance modulation; joint outcome×intensity filter.
