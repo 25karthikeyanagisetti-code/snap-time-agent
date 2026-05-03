@@ -183,7 +183,7 @@ def _step_target(agent_pos, partner_pos, resource_pos):
 def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
                 phi_mode="additive", mem_preage=15, mem_emotion_decay=0.0,
                 emotion_noise=0.0, carry_memory=None, encode_outcome=False,
-                rng=None):
+                positive_encoding=True, rng=None):
     """
     Run one RvR episode and return a result dict.
 
@@ -326,10 +326,16 @@ def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
             resource_pos=resource_pos, partner_alive=partner_alive,
             is_abandonment_event=(outcome in ("PARTNER_DEAD", "RESOURCE_TAKEN")),
         )
+        encode_this_outcome = True
         if outcome == "PARTNER_RESCUED":
             ep_emotion = {"survival": 0.1, "guilt": 0.0, "loyalty": 0.8,
                           "fear": 0.1, "curiosity": 0.0}
             importance = 0.7
+            # Skip positive-valence encoding when positive_encoding is off.
+            # Used by exp_valenced_encoding to test the asymmetric-memory
+            # hypothesis: do agents diverge if rescue produces no memory?
+            if not positive_encoding:
+                encode_this_outcome = False
         elif outcome in ("PARTNER_DEAD", "RESOURCE_TAKEN"):
             ep_emotion = {"survival": 0.3, "guilt": 0.85, "loyalty": 0.5,
                           "fear": 0.2, "curiosity": 0.0}
@@ -338,7 +344,8 @@ def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
             ep_emotion = {"survival": 0.2, "guilt": 0.4, "loyalty": 0.3,
                           "fear": 0.2, "curiosity": 0.0}
             importance = 0.5
-        memory.encode(M, ep_features, ep_emotion, importance)
+        if encode_this_outcome:
+            memory.encode(M, ep_features, ep_emotion, importance)
 
     return {
         "outcome": outcome,

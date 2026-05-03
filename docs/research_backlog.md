@@ -10,8 +10,9 @@ Each item is a single bullet with: `<short_name>` — one-sentence hypothesis �
 
 ## Queued
 
-- `valenced_encoding` — Encoding loyalty memories on RESCUE (not just guilt on failure) restores behavioral types. Vary: positive_encoding ∈ {off, on}. Measure: rescue rate vs initial-rescue-outcome correlation over chained episodes.
 - `signed_threshold_encoding` — Asymmetric gates (different τ for guilt-charged vs loyalty-charged outcomes) sort the population. Vary: τ_guilt ∈ {0.3, 0.7}, τ_loyalty ∈ {0.3, 0.7}. Measure: divergence@ep9 at κ=1.0. (Follow-up to selective_encoding null.)
+- `loyalty_importance_floor` — Reducing rescue-side encoding importance (from 0.7 toward 0) recovers the rescue-side encoding without triggering the Loyalty Boomerang. Vary: rescue_importance ∈ {0.0, 0.1, 0.3, 0.5, 0.7}. Measure: ep9 rescue rate at κ=1.0. (Follow-up to valenced_encoding boomerang.)
+- `decay_asymmetry` — Faster decay on loyalty memories than guilt memories ("forgiveness for self, not others") preserves rescue capacity over chained episodes. Vary: β_loyalty ∈ {0.05, 0.15, 0.3} with β_guilt fixed at 0.05. Measure: ep9 rescue rate at κ=1.0. (Follow-up to valenced_encoding boomerang.)
 - `prior_dilution_rate` — At high encoding-gate τ, the seeded abandonment prior dominates indefinitely. Vary: prior preage ∈ {0, 5, 15, 30, 60}. Measure: rescue@ep9 at τ=0.7. (Follow-up to selective_encoding null.)
 - `memory_consolidation` — Periodic pruning of low-impact memories preserves the committed-rescuer regime. Vary: prune_interval ∈ {1, 3, 5, 10}, prune_threshold ∈ {0.05, 0.15, 0.3}. Measure: rescue rate at episode 9 vs episode 0 across κ.
 - `dynamic_kappa` — Annealing κ from high to low across episodes prevents paralysis early then allows rationality late. Vary: schedule ∈ {constant, linear_decay, step_decay}. Measure: failure rate trajectory across 10 episodes.
@@ -24,4 +25,5 @@ Each item is a single bullet with: `<short_name>` — one-sentence hypothesis �
 
 ## Done (most recent at top)
 
+- 2026-05-02: valenced_encoding — bidirectional outcome encoding makes collapse WORSE, not better. ep9 rescue rate 28% (off) vs 15% (on); div@5–9 = −10 pts (on). Naming: The Loyalty Boomerang.
 - 2026-05-01: selective_encoding — magnitude-gated outcome encoding does NOT prevent the Homogenization Collapse; produces a U-shape (max divergence@ep9 = 11.5 pts at τ=0.3, 0 pts at τ≥0.5).
