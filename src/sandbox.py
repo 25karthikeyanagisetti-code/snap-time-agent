@@ -183,7 +183,7 @@ def _step_target(agent_pos, partner_pos, resource_pos):
 def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
                 phi_mode="additive", mem_preage=15, mem_emotion_decay=0.0,
                 emotion_noise=0.0, carry_memory=None, encode_outcome=False,
-                positive_encoding=True, rng=None):
+                positive_encoding=True, rescue_importance=0.7, rng=None):
     """
     Run one RvR episode and return a result dict.
 
@@ -330,7 +330,11 @@ def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
         if outcome == "PARTNER_RESCUED":
             ep_emotion = {"survival": 0.1, "guilt": 0.0, "loyalty": 0.8,
                           "fear": 0.1, "curiosity": 0.0}
-            importance = 0.7
+            # rescue_importance defaults to 0.7 — matches prior behavior. Used
+            # by exp_loyalty_importance_floor to sweep the rescue-side
+            # encoding strength toward 0, asking whether the loyalty channel
+            # is salvageable at low importance instead of being toggled off.
+            importance = rescue_importance
             # Skip positive-valence encoding when positive_encoding is off.
             # Used by exp_valenced_encoding to test the asymmetric-memory
             # hypothesis: do agents diverge if rescue produces no memory?

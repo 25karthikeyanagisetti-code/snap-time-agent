@@ -21,3 +21,10 @@ One entry per scheduled-task run. Most recent at the bottom.
 - Headline number: ep9 rescue rate = 0.0% at both (G=0.7, L=0.3) and (G=0.7, L=0.7); best divergence@5–9 = +5.1 pts at (G=0.3, L=0.7) — INFERIOR to single-τ=0.3 baseline (+11.5 pts).
 - Files: experiments/signed_threshold_encoding_v1/README.md, results.csv, signed_threshold_encoding.png, finding.md
 - Follow-ups added to backlog: outcome-class boolean gate; per-outcome importance modulation; joint outcome×intensity filter.
+
+## 2026-05-04 — loyalty_importance_floor
+- Hypothesis: Throttling rescue-side encoding importance from the default 0.7 toward 0 recovers ep9 rescue rate without triggering the Loyalty Boomerang (i.e. there is a low-volume loyalty signal regime).
+- Result: NULL — ep5–9 rescue rate stays flat across rescue_importance ∈ {0.0, 0.1, 0.3, 0.5, 0.7}; range 2.4 pts; none come within 12 pts of the rescue-encoding-OFF baseline. The boomerang is structural, not importance-driven.
+- Headline number: ep5–9 rescue rate = {15.0, 14.2, 16.6, 14.6, 16.2}% (range 2.4 pts) vs OFF baseline 28%.
+- Files: experiments/loyalty_importance_floor_v1/README.md, results.csv, loyalty_importance_floor.png, finding.md
+- Follow-ups added to backlog: rescue-payload loyalty-magnitude ablation; recall event-trace sub-study.

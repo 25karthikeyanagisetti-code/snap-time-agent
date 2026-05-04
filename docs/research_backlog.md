@@ -10,8 +10,9 @@ Each item is a single bullet with: `<short_name>` — one-sentence hypothesis �
 
 ## Queued
 
-- `loyalty_importance_floor` — Reducing rescue-side encoding importance (from 0.7 toward 0) recovers the rescue-side encoding without triggering the Loyalty Boomerang. Vary: rescue_importance ∈ {0.0, 0.1, 0.3, 0.5, 0.7}. Measure: ep9 rescue rate at κ=1.0. (Follow-up to valenced_encoding boomerang.)
-- `decay_asymmetry` — Faster decay on loyalty memories than guilt memories ("forgiveness for self, not others") preserves rescue capacity over chained episodes. Vary: β_loyalty ∈ {0.05, 0.15, 0.3} with β_guilt fixed at 0.05. Measure: ep9 rescue rate at κ=1.0. (Follow-up to valenced_encoding boomerang.)
+- `decay_asymmetry` — Faster decay on loyalty memories than guilt memories ("forgiveness for self, not others") preserves rescue capacity over chained episodes. Vary: β_loyalty ∈ {0.05, 0.15, 0.3} with β_guilt fixed at 0.05. Measure: ep9 rescue rate at κ=1.0. (Follow-up to valenced_encoding boomerang — and now elevated by loyalty_importance_floor null: importance was the wrong dial, decay rate is the next-most-likely lever.)
+- `rescue_payload_magnitude` — The boomerang is driven by the rescue memory's loyalty=0.8 emotion magnitude entering recall via the γ-term, not its importance. Vary: rescue payload loyalty ∈ {0.0, 0.2, 0.4, 0.6, 0.8}. Measure: ep5–9 rescue rate at κ=1.0. (Follow-up to loyalty_importance_floor null.)
+- `recall_event_trace` — During a κ=1.0 chain, log every memory reactivation event (which memory fired, at what step, into what context). Hypothesis: rescue memories reactivate during deliberation steps (not only on rescue-cell terminal contexts), pulling emotion off the committed trajectory. (Follow-up to loyalty_importance_floor null.)
 - `prior_dilution_rate` — At high encoding-gate τ, the seeded abandonment prior dominates indefinitely. Vary: prior preage ∈ {0, 5, 15, 30, 60}. Measure: rescue@ep9 at τ=0.7. (Follow-up to selective_encoding null.)
 - `memory_consolidation` — Periodic pruning of low-impact memories preserves the committed-rescuer regime. Vary: prune_interval ∈ {1, 3, 5, 10}, prune_threshold ∈ {0.05, 0.15, 0.3}. Measure: rescue rate at episode 9 vs episode 0 across κ.
 - `dynamic_kappa` — Annealing κ from high to low across episodes prevents paralysis early then allows rationality late. Vary: schedule ∈ {constant, linear_decay, step_decay}. Measure: failure rate trajectory across 10 episodes.
@@ -27,6 +28,7 @@ Each item is a single bullet with: `<short_name>` — one-sentence hypothesis �
 
 ## Done (most recent at top)
 
+- 2026-05-04: loyalty_importance_floor — NULL: ep5–9 rescue rate flat at 14–17% across rescue_importance ∈ {0.0, 0.1, 0.3, 0.5, 0.7}, range 2.4 pts; all ≥12 pts below 28% OFF baseline. Boomerang is structural, not importance-driven.
 - 2026-05-03: signed_threshold_encoding — asymmetric τ_guilt/τ_loyalty gates FAIL in opposite direction; high-τ_guilt cells collapse to 0% ep9 rescue (prior-dilution lockout), best divergence +5.1 pts (inferior to symmetric baseline).
 - 2026-05-02: valenced_encoding — bidirectional outcome encoding makes collapse WORSE, not better. ep9 rescue rate 28% (off) vs 15% (on); div@5–9 = −10 pts (on). Naming: The Loyalty Boomerang.
 - 2026-05-01: selective_encoding — magnitude-gated outcome encoding does NOT prevent the Homogenization Collapse; produces a U-shape (max divergence@ep9 = 11.5 pts at τ=0.3, 0 pts at τ≥0.5).
