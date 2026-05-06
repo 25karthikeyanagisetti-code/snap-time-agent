@@ -304,7 +304,13 @@ def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
         agent_pos = _apply(agent_pos, chosen)
         visited.add(agent_pos)
         memory.age_all(M)
-        if mem_emotion_decay > 0.0:
+        # mem_emotion_decay may be a scalar (legacy uniform decay) or a per-dim
+        # dict (asymmetric decay — used by exp_decay_asymmetry). The dict case
+        # is dispatched to memory.decay_memory_emotion which understands both.
+        if isinstance(mem_emotion_decay, dict):
+            if any(v > 0.0 for v in mem_emotion_decay.values()):
+                memory.decay_memory_emotion(M, mem_emotion_decay)
+        elif mem_emotion_decay > 0.0:
             memory.decay_memory_emotion(M, mem_emotion_decay)
 
         # Terminal check

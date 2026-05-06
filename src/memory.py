@@ -92,11 +92,32 @@ def decay_memory_emotion(M, rate):
 
       stored_emotion[k] *= (1 - rate)   for each emotion dim k
 
+    rate may be either a scalar (uniform decay across emotion dims, the
+    original behavior) OR a dict mapping emotion-dim → per-dim rate. Missing
+    dims in the dict default to 0 (no decay) — used by exp_decay_asymmetry to
+    test whether faster decay on the loyalty channel than the guilt channel
+    ("forgiveness for self, not others") preserves rescue capacity across a
+    chained-memory run.
+
     rate = 0   → no forgiveness (current behavior)
     rate = 0.01 → halves every ~70 steps
     rate = 0.05 → halves every ~14 steps
     rate = 0.20 → halves every ~3 steps  (fast forgiveness)
     """
+    # Per-dim dict path (asymmetric decay)
+    if isinstance(rate, dict):
+        if not rate:
+            return M
+        # Precompute factors per dim. Missing dims → factor 1.0 (no decay).
+        factors = {k: max(0.0, 1.0 - float(v)) for k, v in rate.items()}
+        if all(f >= 1.0 for f in factors.values()):
+            return M
+        for m in M:
+            for k in m["emotion"]:
+                if k in factors:
+                    m["emotion"][k] = m["emotion"][k] * factors[k]
+        return M
+    # Scalar path (legacy behavior)
     if rate <= 0.0:
         return M
     factor = max(0.0, 1.0 - rate)

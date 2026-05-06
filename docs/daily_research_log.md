@@ -28,3 +28,17 @@ One entry per scheduled-task run. Most recent at the bottom.
 - Headline number: ep5–9 rescue rate = {15.0, 14.2, 16.6, 14.6, 16.2}% (range 2.4 pts) vs OFF baseline 28%.
 - Files: experiments/loyalty_importance_floor_v1/README.md, results.csv, loyalty_importance_floor.png, finding.md
 - Follow-ups added to backlog: rescue-payload loyalty-magnitude ablation; recall event-trace sub-study.
+
+## 2026-05-05 — decay_asymmetry
+- Hypothesis: Faster decay on loyalty memories than on guilt memories ("forgiveness for self, not others") preserves rescue capacity over chained episodes — should lift ep5–9 rescue rate at κ=1.0 toward the rescue-encoding-OFF baseline of 28%.
+- Result: failed in opposite direction — ep5–9 mean rescue is flat (range 2.0 pts across β_loyalty ∈ {0.05, 0.15, 0.30, 0.50} with β_guilt=0.05), but the population divergence@5–9 INVERTS sign monotonically from +13.3 pts (symmetric) to −18.8 pts (extreme asymmetry). Asymmetric forgiveness erases experience-driven type formation rather than enabling it.
+- Headline number: ep5–9 mean rescue {20.8, 19.4, 19.0, 18.8}% (range 2.0 pts); divergence@5–9 {+13.3, +4.2, −14.6, −18.8} pts (32-pt swing).
+- Files: experiments/decay_asymmetry_v1/README.md, results.csv, decay_asymmetry.png, finding.md
+- Follow-ups added to backlog: reversed-asymmetry falsifier; κ=0.5 replication; memory-population audit.
+
+## 2026-05-06 — decay_asymmetry_reversed
+- Hypothesis: Reversing the 2026-05-05 sweep (β_loyalty=0.05 fixed, sweep β_guilt) should produce monotone GROWTH in divergence@5–9 if the loyalty-cushion-vs-guilt-counterweight interpretation is correct. Cleanest single falsifier.
+- Result: failed — divergence does NOT grow with β_guilt; it falls toward 0 across the first three cells (+10.6 → +3.6 → −1.5 pts) then β_guilt=0.50 breaks the committed regime entirely (ep0 collapses 84% → 44%). The cushion-vs-counterweight interpretation is falsified; the operative mechanism is "any imbalance erases experience-driven type formation," not directional. Symmetric mild decay (β=0.05 both sides) is now confirmed across two independent runs as the only regime that preserves +10–13 pts divergence.
+- Headline number: divergence@5–9 {+10.6, +3.6, −1.5, +10.9} pts; ep5–9 mean rescue {19.4, 20.8, 17.4, 9.4}%; ep0 rescue {84, 75, 59, 44}% (regime break at β_guilt=0.50).
+- Files: experiments/decay_asymmetry_reversed_v1/README.md, results.csv, decay_asymmetry_reversed.png, finding.md
+- Follow-ups added to backlog: fine-grained reversed sweep (β_guilt ∈ 0.05–0.30); regime-break check on the prior loyalty-side sweep; seed-charge magnitude match.
