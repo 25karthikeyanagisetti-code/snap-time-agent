@@ -42,3 +42,10 @@ One entry per scheduled-task run. Most recent at the bottom.
 - Headline number: divergence@5–9 {+10.6, +3.6, −1.5, +10.9} pts; ep5–9 mean rescue {19.4, 20.8, 17.4, 9.4}%; ep0 rescue {84, 75, 59, 44}% (regime break at β_guilt=0.50).
 - Files: experiments/decay_asymmetry_reversed_v1/README.md, results.csv, decay_asymmetry_reversed.png, finding.md
 - Follow-ups added to backlog: fine-grained reversed sweep (β_guilt ∈ 0.05–0.30); regime-break check on the prior loyalty-side sweep; seed-charge magnitude match.
+
+## 2026-05-07 — memory_population_audit
+- Hypothesis: Snapshotting the M store at end-of-ep4 across the 4 decay_asymmetry_reversed cells will resolve whether divergence-erosion under asymmetric forgiveness is mediated by per-class memory weight in the γ·|emotion| recall term.
+- Result: confirmed with a sharper mechanism. Asymmetric forgiveness "launders" failure-tagged memories — at β_guilt=0.15 the guilt channel decays so fast that 78% of failure memories now have stored loyalty > stored guilt at recall time (vs 0% in the symmetric β=0.05 cell). The outcome ledger of M collapses into one effective valence class. Per-channel guilt total per agent drops from 0.95 to 0.48 (factor ~2); the laundering rate plateaus at 75–78% across all asymmetric cells.
+- Headline number: % of failure-tagged memories with stored loyalty > stored guilt at end-of-ep4 = {0%, 78%, 75%, 78%} across β_guilt ∈ {0.05, 0.15, 0.30, 0.50}.
+- Files: experiments/memory_population_audit_v1/README.md, results.csv, memory_snapshot.csv, memory_population_audit.png, finding.md
+- Follow-ups added to backlog: laundering_kappa_invariance, tag_aware_recall, laundering_inflection (fine β_guilt sweep), recharge_on_recall counter-mechanism.
