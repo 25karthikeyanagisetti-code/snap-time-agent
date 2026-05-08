@@ -10,8 +10,7 @@ Each item is a single bullet with: `<short_name>` — one-sentence hypothesis �
 
 ## Queued
 
-- `laundering_kappa_invariance` — Replicate the memory_population_audit at κ=0.5 (boomerang shoulder). Predicts laundering rate ~78% at β_guilt=0.15 even if macro divergence is muted. (Elevated 2026-05-07; supersedes decay_asymmetry_lower_kappa as the more diagnostic version of the κ-replication.)
-- `tag_aware_recall` — Modify recall to use the tag (encoded valence at write time) for class identity rather than current stored channels. If divergence persists under asymmetric β under this recall mode, laundering IS the mechanism. (Elevated 2026-05-07.)
+- `tag_aware_recall` — Modify recall to use the tag (encoded valence at write time) for class identity rather than current stored channels. If divergence persists under asymmetric β under this recall mode, laundering IS the mechanism. (Elevated 2026-05-07; further promoted 2026-05-08 after laundering_kappa_invariance pinned the decay-arithmetic layer.)
 - `laundering_inflection` — Fine sweep β_guilt ∈ {0.05, 0.07, 0.09, 0.11, 0.13, 0.15} at κ=1.0 to find the exact threshold where failure memories switch from class-preserving to class-flipping. (Elevated 2026-05-07.)
 - `recharge_on_recall` — Add `+= δ` injection to stored emotion every time a memory reactivates above threshold. If this prevents laundering AND preserves divergence, we have a counter-mechanism. (Elevated 2026-05-07.)
 - `decay_asymmetry_lower_kappa` — Replicate the 2026-05-05 4-cell sweep at κ=0.5 (boomerang is weaker there). Tests whether the divergence-inversion is regime-specific to deep-committed κ=1.0 or generic across the boomerang regime.
@@ -35,6 +34,7 @@ Each item is a single bullet with: `<short_name>` — one-sentence hypothesis �
 
 ## Done (most recent at top)
 
+- 2026-05-08: laundering_kappa_invariance — held; failure-memory laundering rate at end-of-ep4 = {0%, 80.7%, 76.5%, 81.1%} across β_guilt ∈ {0.05, 0.15, 0.30, 0.50} at κ=0.5, max cross-κ Δ = 3.2 pts vs the κ=1.0 audit. Mechanism pinned to decay arithmetic; macro divergence unmeasurable at κ=0.5 because ep1 collapses to 0% rescue universally.
 - 2026-05-07: memory_population_audit — confirmed per-class memory weight as the divergence-erosion mediator; sharper mechanism is "valence laundering": 78% of failure-tagged memories at β_guilt=0.15 have stored loyalty > stored guilt at recall time (vs 0% at symmetric β=0.05); per-agent guilt-channel total drops 0.95 → 0.48.
 - 2026-05-06: decay_asymmetry_reversed — falsifies the 2026-05-05 cushion-vs-counterweight interpretation; divergence@5–9 falls toward 0 across β_guilt ∈ {0.05, 0.15, 0.30} (+10.6 → +3.6 → −1.5 pts) instead of growing positive, and β_guilt=0.50 breaks the committed regime (ep0 84% → 44%). Symmetric mild decay (β=0.05) confirmed across two independent runs as the only regime preserving experience-driven type formation.
 - 2026-05-05: decay_asymmetry — failed in opposite direction; ep5–9 mean rescue flat at 18.8–20.8% (range 2.0 pts) across β_loyalty ∈ {0.05, 0.15, 0.30, 0.50} with β_guilt=0.05, but divergence@5–9 inverts sign monotonically from +13.3 pts (symmetric) to −18.8 pts (extreme asymmetry).

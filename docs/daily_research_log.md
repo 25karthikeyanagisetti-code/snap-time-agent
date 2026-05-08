@@ -49,3 +49,10 @@ One entry per scheduled-task run. Most recent at the bottom.
 - Headline number: % of failure-tagged memories with stored loyalty > stored guilt at end-of-ep4 = {0%, 78%, 75%, 78%} across β_guilt ∈ {0.05, 0.15, 0.30, 0.50}.
 - Files: experiments/memory_population_audit_v1/README.md, results.csv, memory_snapshot.csv, memory_population_audit.png, finding.md
 - Follow-ups added to backlog: laundering_kappa_invariance, tag_aware_recall, laundering_inflection (fine β_guilt sweep), recharge_on_recall counter-mechanism.
+
+## 2026-05-08 — laundering_kappa_invariance
+- Hypothesis: Replicate the memory_population_audit at κ=0.5 (boomerang shoulder). Predicts laundering rate ~78% at β_guilt=0.15 even if macro divergence is muted.
+- Result: held — laundering rate at κ=0.5 is statistically indistinguishable from κ=1.0 across all four cells; mechanism pinned to decay arithmetic, not regime-coupled. Macro divergence is unmeasurable at κ=0.5 because ep1 collapses universally to 0% rescue, so the audit's behavioral slice can't be applied at this regime — confirms the audit's prediction that "the macro divergence may not invert at κ=0.5, but the laundering microstructure should be identical."
+- Headline number: failure-memory laundering rate at end-of-ep4 = {0.0%, 80.7%, 76.5%, 81.1%} across β_guilt ∈ {0.05, 0.15, 0.30, 0.50} at κ=0.5; κ=1.0 reference {0%, 78%, 75%, 78%} (max cross-κ Δ = 3.2 pts).
+- Files: experiments/laundering_kappa_invariance_v1/README.md, results.csv, memory_snapshot.csv, laundering_kappa_invariance.png, finding.md
+- Follow-ups: tag_aware_recall and recharge_on_recall promoted as next priorities — both target the decay-arithmetic layer that is now pinned by this κ-invariance.
