@@ -141,3 +141,43 @@ def guilt_recall_strength(M, context_features):
                 best = impact
     # Squash to [0,1] — impact can exceed 1 due to exp terms
     return min(1.0, best)
+
+
+# Encoding-time tags that mark a memory as "originally guilt-charged". Used by
+# guilt_recall_strength_tag_aware below.
+_GUILT_TAGS = ("seed", "failure", "timeout")
+
+
+def guilt_recall_strength_tag_aware(M, context_features):
+    """
+    Tag-aware variant of guilt_recall_strength.
+
+    A memory qualifies as "guilt-class" if its 'tag' (set at encoding time
+    by the experiment) is one of {seed, failure, timeout} — i.e. it was
+    a guilt-charged event when written, regardless of how much its stored
+    guilt may have decayed since.
+
+    This isolates the "valence laundering" mechanism identified in the
+    2026-05-07 memory_population_audit: under asymmetric β_guilt, failure
+    memories lose their guilt class by current-state classification (their
+    stored guilt drops below threshold) but their identity-of-origin is
+    unchanged. Tag-aware recall pins class identity to the encoding tag, so
+    if asymmetric-β divergence-erosion is driven by laundering, this mode
+    should restore the symmetric-β divergence@5–9 even at high β_guilt.
+
+    Memories without a 'tag' key fall back to the legacy criterion
+    (stored.guilt > 0.4), preserving the behavior of prior experiments
+    that did not tag the store.
+    """
+    best = 0.0
+    for m in M:
+        tag = m.get("tag")
+        if tag is None:
+            qualifies = m["emotion"].get("guilt", 0.0) > 0.4
+        else:
+            qualifies = tag in _GUILT_TAGS
+        if qualifies:
+            impact = memory_impact(m, context_features)
+            if impact > best:
+                best = impact
+    return min(1.0, best)

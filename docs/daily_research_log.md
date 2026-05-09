@@ -56,3 +56,10 @@ One entry per scheduled-task run. Most recent at the bottom.
 - Headline number: failure-memory laundering rate at end-of-ep4 = {0.0%, 80.7%, 76.5%, 81.1%} across β_guilt ∈ {0.05, 0.15, 0.30, 0.50} at κ=0.5; κ=1.0 reference {0%, 78%, 75%, 78%} (max cross-κ Δ = 3.2 pts).
 - Files: experiments/laundering_kappa_invariance_v1/README.md, results.csv, memory_snapshot.csv, laundering_kappa_invariance.png, finding.md
 - Follow-ups: tag_aware_recall and recharge_on_recall promoted as next priorities — both target the decay-arithmetic layer that is now pinned by this κ-invariance.
+
+## 2026-05-09 — tag_aware_recall
+- Hypothesis: Pinning a memory's class identity to its encoding-time tag (instead of its current decayed `stored.guilt > 0.4` state) restores the committed-rescue regime under asymmetric forgiveness. If divergence persists under asymmetric β_guilt under this recall mode, laundering IS the mechanism.
+- Result: held — long-run rescue (ep5–9 mean) approximately doubles at every β_guilt cell under tag-aware recall, and the regime-break at β_guilt=0.30 (ep0 rescue 80% → 48% under legacy) is fully eliminated (ep0 stays at 76% under tag-aware). Confirms valence laundering at the recall gate as the mechanism behind the 2026-05-06 divergence-erosion. A residual β_guilt=0.50 ep0 collapse (52% legacy → 58% tag-aware, vs 78% symmetric baseline) suggests a SECOND mechanism on the injection pathway.
+- Headline number: ep5–9 mean rescue uplift across β_guilt ∈ {0.05, 0.15, 0.30, 0.50} = {+22.4, +15.2, +18.0, +18.0} pts (factors {2.06×, 1.76×, 2.61×, 2.67×}); β_guilt=0.30 ep0 rescue 48% → 76% (+28 pts).
+- Files: experiments/tag_aware_recall_v1/README.md, results.csv, tag_aware_recall.png, finding.md
+- Follow-ups added to backlog: tag_aware_injection, tag_aware_recall_kappa.

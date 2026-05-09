@@ -183,7 +183,8 @@ def _step_target(agent_pos, partner_pos, resource_pos):
 def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
                 phi_mode="additive", mem_preage=15, mem_emotion_decay=0.0,
                 emotion_noise=0.0, carry_memory=None, encode_outcome=False,
-                positive_encoding=True, rescue_importance=0.7, rng=None):
+                positive_encoding=True, rescue_importance=0.7, rng=None,
+                tag_aware_recall=False):
     """
     Run one RvR episode and return a result dict.
 
@@ -232,8 +233,16 @@ def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
             agent_pos, partner_pos, resource_pos, partner_alive
         )
 
-        # Memory recall
-        guilt_recall = memory.guilt_recall_strength(M, ctx_features)
+        # Memory recall. tag_aware_recall=True (off by default — preserves prior
+        # behavior) routes through the tag-keyed variant: a memory counts as
+        # guilt-class iff its encoding-time tag is in {seed, failure, timeout},
+        # regardless of how much its stored guilt has decayed since. Tested by
+        # exp_tag_aware_recall against the 2026-05-06 baseline to isolate the
+        # "valence laundering" mechanism identified in memory_population_audit.
+        if tag_aware_recall:
+            guilt_recall = memory.guilt_recall_strength_tag_aware(M, ctx_features)
+        else:
+            guilt_recall = memory.guilt_recall_strength(M, ctx_features)
 
         # Build emotion-update context
         time_pressure = step / max(1, t_snap)
