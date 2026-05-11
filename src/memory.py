@@ -127,6 +127,29 @@ def decay_memory_emotion(M, rate):
     return M
 
 
+def cap_store(M, capacity, context_features):
+    """
+    Bounded-memory eviction: keep only the top-`capacity` memories by current
+    MemoryImpact score relative to `context_features`. Mutates M in place.
+
+    Used by exp_memory_capacity to test whether bounding the memory store
+    breaks the Homogenization Collapse — i.e. whether unbounded accumulation
+    is the structural cause of behavioral-type collapse.
+
+    capacity = None or capacity <= 0 → no eviction (legacy behavior).
+    """
+    if capacity is None or capacity <= 0:
+        return M
+    if len(M) <= capacity:
+        return M
+    scored = [(memory_impact(m, context_features), m) for m in M]
+    scored.sort(key=lambda p: p[0], reverse=True)
+    kept = [pair[1] for pair in scored[:capacity]]
+    M.clear()
+    M.extend(kept)
+    return M
+
+
 def guilt_recall_strength(M, context_features):
     """
     Specialized helper: returns the maximum impact across memories whose stored

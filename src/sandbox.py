@@ -184,7 +184,8 @@ def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
                 phi_mode="additive", mem_preage=15, mem_emotion_decay=0.0,
                 emotion_noise=0.0, carry_memory=None, encode_outcome=False,
                 positive_encoding=True, rescue_importance=0.7, rng=None,
-                tag_aware_recall=False):
+                tag_aware_recall=False, mem_capacity=None,
+                encoding_jitter=0.0):
     """
     Run one RvR episode and return a result dict.
 
@@ -364,7 +365,25 @@ def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
                           "fear": 0.2, "curiosity": 0.0}
             importance = 0.5
         if encode_this_outcome:
+            # Per-agent encoding jitter: a small Gaussian perturbation on the
+            # encoded emotion vector. Models true individual differences at
+            # the level of how each agent INTERNALLY encodes the same
+            # outcome. Used by exp_personality_emergence to test whether
+            # diverse encoding (per-agent identity) is the missing ingredient
+            # behind the Homogenization Collapse — i.e. whether bounded
+            # memory + diverse encoding is the joint condition for
+            # behavioral types to emerge from experience.
+            if encoding_jitter > 0.0:
+                ep_emotion = {k: max(0.0, min(1.0, v + rng.gauss(0.0, encoding_jitter)))
+                              for k, v in ep_emotion.items()}
             memory.encode(M, ep_features, ep_emotion, importance)
+        # Bounded-store eviction: if mem_capacity is set, keep only the top-K
+        # memories by current MemoryImpact relative to the terminal context.
+        # Used by exp_memory_capacity / exp_personality_emergence to test
+        # whether bounded memory plus diverse encoding produces actual
+        # behavioral types from experience.
+        if mem_capacity is not None and mem_capacity > 0:
+            memory.cap_store(M, mem_capacity, ep_features)
 
     return {
         "outcome": outcome,

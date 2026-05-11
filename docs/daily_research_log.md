@@ -8,6 +8,13 @@ One entry per scheduled-task run. Most recent at the bottom.
 - Headline number: max divergence@ep9 = 11.5 pts at τ=0.3 (vs 0.8 pts baseline; 0 pts at τ≥0.5).
 - Files: experiments/selective_encoding_v1/results.csv, selective_encoding_collapse.png, finding.md
 
+## 2026-05-02 — personality_emergence (THE HEADLINE)
+- Hypothesis: bounded memory + per-agent encoding jitter (joint sufficiency) produces behavioral types and breaks the Homogenization Collapse.
+- Result: PARTIAL POSITIVE — encoding jitter ALONE delivers a 2.55× sustained rescue rate (15.4% → 39.2% avg ep5-9). Bounded memory alone is null. Behavioral TYPES still don't emerge (divergence@5-9 stays ~+3pts), but population-level CAPACITY is restored. First positive finding in the project. Naming: The Encoding Diversity Effect.
+- Headline number: 2.55× sustained rescue rate from encoding noise σ=0.15.
+- Files: experiments/personality_emergence_v1/{README.md, results.csv, personality_emergence.png, finding.md}
+- Companion null: experiments/memory_capacity_v1 — bounded memory alone delivers nothing (max +4.4 pts at cap=3).
+
 ## 2026-05-02 — valenced_encoding
 - Hypothesis: Encoding loyalty memories on RESCUE (not just guilt on failure) restores behavioral types — the population should DIVERGE based on early-episode outcome.
 - Result: failed in the OPPOSITE direction. Turning OFF the rescue-side encoding nearly DOUBLES long-term rescue rate (28% vs 15% at ep9). Both conditions show NEGATIVE divergence (anti-types). Naming this The Loyalty Boomerang — bidirectional outcome encoding accelerates the Homogenization Collapse rather than counteracting it.
