@@ -95,3 +95,10 @@ One entry per scheduled-task run. Most recent at the bottom.
 - Headline number: Δep0 at β_guilt=0.50 = −2.0 pts (residual gap NOT closed); +20.0 pts at β_guilt=0.05 (seed-aging fix, wrong cell).
 - Files: experiments/tag_aware_injection_v1/README.md, results.csv, tag_aware_injection.png, finding.md
 - Follow-ups added to backlog: recall_event_trace promoted; seed_only_floor (new); β=0.50 N=200 replication (new).
+
+## 2026-05-12 — seed_only_floor
+- Hypothesis: Pruning the tag-aware injection floor table to ONLY the 'seed' entry (outcome-tagged memories fall back to legacy literal-stored injection) reproduces the full-floor Δep0 vector at all 4 β_guilt cells. If yes, per-class outcome floors are inert and the operative mechanism is "seed prior decays under preage, floor restores it on recall."
+- Result: HELD with caveat — at 3/4 cells (β_guilt ∈ {0.05, 0.15, 0.50}) seed-only matches full-floor Δep0 to within sampling noise; at β_guilt=0.50 (the regime-breaking cell) BOTH modes deliver an identical +10 pts ep0 uplift and identical +9 pts ep5–9 uplift. β_guilt=0.30 is the lone disagreement (Δfull=0, Δseed=−15 — a 2-SE gap pending N=200 replication). Outcome floors confirmed inert at the cell that motivated the tag_aware_injection thread.
+- Headline number: at β_guilt=0.50, seed-only Δep0 = +10 pts = full-floor Δep0 (identical); at β_guilt=0.30, seed-only underperforms full by 15 pts.
+- Files: experiments/seed_only_floor_v1/README.md, results.csv, seed_only_floor.png, finding.md
+- Follow-ups added to backlog: seed_only_floor_b30_n200, seed_refresh, seed_only_floor_ep5_9_audit, floor_negative_control.
