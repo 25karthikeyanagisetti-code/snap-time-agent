@@ -8,6 +8,24 @@ One entry per scheduled-task run. Most recent at the bottom.
 - Headline number: max divergence@ep9 = 11.5 pts at τ=0.3 (vs 0.8 pts baseline; 0 pts at τ≥0.5).
 - Files: experiments/selective_encoding_v1/results.csv, selective_encoding_collapse.png, finding.md
 
+## 2026-05-02 — paralysis_softmax_fix (NEW SUB-MECHANISM)
+- Hypothesis: lowering softmax temperature toward argmin breaks the Paralysis Valley by committing the agent to whichever action has even a slight Φ lead.
+- Result: PARTIAL + NEW MECHANISM REVEALED. At the valley shoulder (κ=0.5), low T rescues — 33% → 43% rescue rate at T=0.05. At the valley peak (κ=0.25), no T value rescues — 91-100% TIMEOUT regardless. The agent locks onto a non-progressive argmin and doesn't break out. Refines the original Wave-1 dither hypothesis: the Paralysis Valley has TWO sub-mechanisms — DITHER (shoulder, partially fixable by low T) and LOCK-IN (peak, not fixable by T).
+- Headline number: κ=0.5 rescue rate 33% → 43% at T=0.05; κ=0.25 stays at 0-1.7% across all T.
+- Files: experiments/paralysis_softmax_fix_v1/{README.md, results.csv, paralysis_softmax_fix.png}
+
+## 2026-05-02 — jitter_sigma_long (LONG-HORIZON STABILIZATION CONFIRMED)
+- Hypothesis: jitter σ has an inverted-U; saturation at large σ via [0,1] emotion clamp. Also: the κ=2.0 stabilization is a true equilibrium, not a slow decay.
+- Result: BOTH PARTIALLY HELD/REFUTED. The σ effect is MONOTONICALLY INCREASING up to σ=0.40 — no observed saturation. At σ=0.40 sustained rescue at ep5-9 = 84.8% and at ep15-19 = 84.4% (decay only -0.4 pts) — the stabilization IS a true long-horizon equilibrium. Long-horizon ratio σ=0.40 vs σ=0 baseline: 3.30× (84.4% vs 25.6% at ep15-19).
+- Headline number: σ=0.40 at κ=2.0 yields 85% sustained rescue rate, stable to within 1 pt across episodes 5-19.
+- Files: experiments/jitter_sigma_long_v1/{README.md, results.csv, jitter_sigma_long.png}
+
+## 2026-05-02 — jitter_universality (SHARPENING THE PRIOR)
+- Hypothesis: encoder homogeneity is the substrate of every collapse mode in this framework — jitter should rescue both the Homogenization Collapse AND the Paralysis Valley.
+- Result: PARTIALLY REFUTED, but produced a SHARPER finding. Jitter does NOT help at the Paralysis Valley (κ=0.25-0.5: 0% gain). It does help in the committed regime, with strength SCALING in κ: +2.4 pts at κ=0.5, +16.4 at κ=1.0, +43.6 at κ=2.0. At κ=2.0 jitter completely STABILIZES the regime — rescue rate stays at 76% across episodes 1-9 instead of decaying to 20%. Two failure modes, two distinct mechanisms.
+- Headline number: 2.60× sustained rescue rate at κ=2.0 (27.2% → 70.8%); regime fully stabilized.
+- Files: experiments/jitter_universality_v1/{README.md, results.csv, jitter_universality.png, finding.md}
+
 ## 2026-05-02 — personality_emergence (THE HEADLINE)
 - Hypothesis: bounded memory + per-agent encoding jitter (joint sufficiency) produces behavioral types and breaks the Homogenization Collapse.
 - Result: PARTIAL POSITIVE — encoding jitter ALONE delivers a 2.55× sustained rescue rate (15.4% → 39.2% avg ep5-9). Bounded memory alone is null. Behavioral TYPES still don't emerge (divergence@5-9 stays ~+3pts), but population-level CAPACITY is restored. First positive finding in the project. Naming: The Encoding Diversity Effect.
@@ -70,3 +88,10 @@ One entry per scheduled-task run. Most recent at the bottom.
 - Headline number: ep5–9 mean rescue uplift across β_guilt ∈ {0.05, 0.15, 0.30, 0.50} = {+22.4, +15.2, +18.0, +18.0} pts (factors {2.06×, 1.76×, 2.61×, 2.67×}); β_guilt=0.30 ep0 rescue 48% → 76% (+28 pts).
 - Files: experiments/tag_aware_recall_v1/README.md, results.csv, tag_aware_recall.png, finding.md
 - Follow-ups added to backlog: tag_aware_injection, tag_aware_recall_kappa.
+
+## 2026-05-11 — tag_aware_injection
+- Hypothesis: Tag-keyed floors on `inject_recalled_emotion` (`max(stored, floor)` per dim) close the residual β_guilt=0.50 ep0 collapse left over by the 2026-05-09 tag-aware-recall fix. Tests whether the injection pathway is the second laundering mechanism.
+- Result: FAILED at the headline cell — Δep0 at β_guilt=0.50 = −2.0 pts (66% INJ-ON vs 68% INJ-OFF, within sampling noise). The injection pathway is NOT the residual mechanism. UNEXPECTED secondary: the biggest ep0 uplift (+20 pts) lands at the symmetric β_guilt=0.05 cell — the floor is fixing natural aging of the seeded prior, not laundered failure memories. Δep0 vector monotonically decreasing in β_guilt: {+20.0, +8.0, +14.0, −2.0} pts — opposite to the laundering prediction.
+- Headline number: Δep0 at β_guilt=0.50 = −2.0 pts (residual gap NOT closed); +20.0 pts at β_guilt=0.05 (seed-aging fix, wrong cell).
+- Files: experiments/tag_aware_injection_v1/README.md, results.csv, tag_aware_injection.png, finding.md
+- Follow-ups added to backlog: recall_event_trace promoted; seed_only_floor (new); β=0.50 N=200 replication (new).

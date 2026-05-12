@@ -87,3 +87,60 @@ def inject_recalled_emotion(e, recalled_emotion, gain):
     for dim in e.keys():
         new_e[dim] = _clip(e[dim] + gain * recalled_emotion.get(dim, 0.0))
     return new_e
+
+
+# Tag-keyed injection floor templates. When a memory carries an encoding-time
+# 'tag' field (set at the experiment level — same instrumentation as
+# memory_population_audit and tag_aware_recall), the injection pathway can
+# look up a per-tag "essence" floor and inject max(stored_dim, floor_dim) on
+# each emotion channel. This neutralizes the second mechanism flagged at the
+# end of 2026-05-09 tag_aware_recall: under asymmetric β_guilt the recall
+# gate may say "this IS a guilt memory" but the literal stored.guilt has been
+# laundered to ~0, so the injection contributes no guilt to current e_t even
+# when the gate fires. Floors restore the channel that the tag implies.
+#
+# Values are chosen to roughly match the seeded prior / outcome-encoding
+# magnitudes used in sandbox.py: the 'seed' floor matches the seeded
+# abandonment prior; 'failure' matches the failure-outcome encoding;
+# 'rescue' matches the rescue-outcome encoding; 'timeout' is a softer
+# variant.
+TAG_FLOORS_DEFAULT = {
+    "seed":    {"survival": 0.2, "guilt": 0.6, "loyalty": 0.4,
+                "fear": 0.1, "curiosity": 0.0},
+    "failure": {"survival": 0.3, "guilt": 0.6, "loyalty": 0.5,
+                "fear": 0.2, "curiosity": 0.0},
+    "timeout": {"survival": 0.2, "guilt": 0.3, "loyalty": 0.3,
+                "fear": 0.2, "curiosity": 0.0},
+    "rescue":  {"survival": 0.1, "guilt": 0.0, "loyalty": 0.6,
+                "fear": 0.1, "curiosity": 0.0},
+}
+
+
+def inject_recalled_emotion_tag_aware(e, m, gain, tag_floors=None):
+    """
+    Tag-keyed variant of inject_recalled_emotion. For tagged memories,
+    injection on each emotion dim is gain * max(stored_dim, floor_dim) where
+    the floor is a template keyed by the memory's encoding-time tag.
+
+    A memory without a 'tag' key (or with an unknown tag) falls back to the
+    legacy literal-stored-channels injection — preserves the behavior of
+    every prior experiment that did not tag the store.
+
+    Used by exp_tag_aware_injection (2026-05-10) to test whether closing the
+    injection-side laundering pathway eliminates the residual β_guilt=0.50
+    ep0 collapse left over after the recall-side fix from tag_aware_recall.
+    """
+    if tag_floors is None:
+        tag_floors = TAG_FLOORS_DEFAULT
+    tag = m.get("tag")
+    stored = m.get("emotion", {})
+    if tag is None or tag not in tag_floors:
+        return inject_recalled_emotion(e, stored, gain)
+    floor = tag_floors[tag]
+    new_e = dict(e)
+    for dim in e.keys():
+        s = stored.get(dim, 0.0)
+        f = floor.get(dim, 0.0)
+        injection_amt = s if s > f else f
+        new_e[dim] = _clip(e[dim] + gain * injection_amt)
+    return new_e

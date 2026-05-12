@@ -185,7 +185,8 @@ def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
                 emotion_noise=0.0, carry_memory=None, encode_outcome=False,
                 positive_encoding=True, rescue_importance=0.7, rng=None,
                 tag_aware_recall=False, mem_capacity=None,
-                encoding_jitter=0.0):
+                encoding_jitter=0.0, softmax_temp=None,
+                tag_aware_injection=False, tag_floors=None):
     """
     Run one RvR episode and return a result dict.
 
@@ -263,12 +264,24 @@ def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
             for k_ in list(e.keys()):
                 e[k_] = max(0.0, min(1.0, e[k_] + rng.gauss(0.0, emotion_noise)))
 
-        # If a memory's impact crossed threshold, bleed its emotion in
+        # If a memory's impact crossed threshold, bleed its emotion in.
+        # tag_aware_injection=True (off by default — preserves prior behavior)
+        # routes the injection through the tag-keyed variant: for tagged
+        # memories the injected amount on each dim is max(stored, floor)
+        # where floor is a per-tag template (see emotion.TAG_FLOORS_DEFAULT).
+        # Used by exp_tag_aware_injection to close the injection-side
+        # laundering pathway flagged at the end of tag_aware_recall.
         scored = memory.recall(M, ctx_features, top_k=1)
         if scored and scored[0][1] >= config.REACTIVATION_THRESHOLD:
-            e = emotion.inject_recalled_emotion(
-                e, scored[0][0]["emotion"], gain=config.REACTIVATION_GAIN
-            )
+            if tag_aware_injection:
+                e = emotion.inject_recalled_emotion_tag_aware(
+                    e, scored[0][0], gain=config.REACTIVATION_GAIN,
+                    tag_floors=tag_floors,
+                )
+            else:
+                e = emotion.inject_recalled_emotion(
+                    e, scored[0][0]["emotion"], gain=config.REACTIVATION_GAIN
+                )
 
         # Score every action via Phi (additive or multiplicative coupling)
         scored_actions = []
@@ -281,15 +294,21 @@ def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
             scored_actions.append((a, phi_a))
 
         # Boltzmann action selection over -Phi (low Phi = high prob).
-        # Temperature SOFTMAX_TEMP controls how noisy the decision is.
-        if SOFTMAX_TEMP <= 0.0:
+        # Temperature controls how noisy the decision is. Default uses module
+        # constant SOFTMAX_TEMP (preserves all prior experiment behavior); the
+        # softmax_temp parameter allows per-call override for experiments that
+        # treat decision temperature as the swept variable (e.g.
+        # exp_paralysis_softmax_fix tests whether higher temperature breaks
+        # the Paralysis Valley by injecting decision-time exploration).
+        T_eff = softmax_temp if softmax_temp is not None else SOFTMAX_TEMP
+        if T_eff <= 0.0:
             scored_actions.sort(key=lambda p: p[1])
             chosen = scored_actions[0][0]
         else:
             phis = [p[1] for p in scored_actions]
             min_phi = min(phis)
             # Subtract min for numerical stability, then softmax over -(phi-min)/T
-            weights = [math.exp(-(phi_val - min_phi) / SOFTMAX_TEMP) for phi_val in phis]
+            weights = [math.exp(-(phi_val - min_phi) / T_eff) for phi_val in phis]
             wsum = sum(weights)
             probs = [w / wsum for w in weights]
             r = rng.random()
