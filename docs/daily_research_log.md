@@ -102,3 +102,9 @@ One entry per scheduled-task run. Most recent at the bottom.
 - Headline number: at β_guilt=0.50, seed-only Δep0 = +10 pts = full-floor Δep0 (identical); at β_guilt=0.30, seed-only underperforms full by 15 pts.
 - Files: experiments/seed_only_floor_v1/README.md, results.csv, seed_only_floor.png, finding.md
 - Follow-ups added to backlog: seed_only_floor_b30_n200, seed_refresh, seed_only_floor_ep5_9_audit, floor_negative_control.
+
+## 2026-05-13 — seed_only_floor_b30_n200
+- Hypothesis: Replicating the β_guilt=0.30 cell of seed_only_floor at N=200 will tighten the −15 pts Δfull−Δseed gap to ≤5 pts, resolving whether per-class outcome floors carry a real (small) contribution at moderate asymmetry or the gap was sampling noise.
+- Result: HELD — the gap collapses from 15 pts (N=40) to **1.0 pt** (N=200), well inside the 2-SE band of ~9.2 pts. ep0 rates: OFF=69.5%, Full=68.5%, Seed-only=69.5%. Δfull=−1.0 pts, Δseed=+0.0 pts — statistically indistinguishable. Per-class outcome floors confirmed inert at the β_guilt=0.30 cell too. The 2026-05-12 "HELD with caveat" upgrades to HELD across all four β_guilt cells.
+- Headline number: |Δfull − Δseed| at ep0 collapses 15.0 → 1.0 pt going N=40 → N=200; residual ep5–7 full-vs-seed gap is 4.8 pts (within 2-SE, suggestive only).
+- Files: experiments/seed_only_floor_b30_n200_v1/README.md, results.csv, seed_only_floor_b30_n200.png, finding.md
