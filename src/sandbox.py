@@ -186,7 +186,8 @@ def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
                 positive_encoding=True, rescue_importance=0.7, rng=None,
                 tag_aware_recall=False, mem_capacity=None,
                 encoding_jitter=0.0, softmax_temp=None,
-                tag_aware_injection=False, tag_floors=None):
+                tag_aware_injection=False, tag_floors=None,
+                seed_refresh_on_recall=False):
     """
     Run one RvR episode and return a result dict.
 
@@ -229,6 +230,24 @@ def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
         # Update partner alive status
         if step >= PARTNER_DEADLINE:
             partner_alive = False
+
+        # Optional: refresh seeded-prior stored emotion BEFORE recall this step.
+        # When seed_refresh_on_recall is True (off by default — preserves prior
+        # behavior), every memory carrying tag='seed' has its stored.emotion
+        # snapped back to its 'encoding_emotion' template at the start of each
+        # step. This bypasses the tag-floor injection mechanism entirely: the
+        # aged seed prior is kept loud at the SOURCE, so the legacy literal-
+        # stored injection path also benefits AND the impact computation
+        # (which uses emotion_magnitude) sees a non-decayed prior. Used by
+        # exp_seed_refresh to test whether the tag-floor injection table is a
+        # non-essential intermediate construct and the operative mechanism is
+        # simply "keep the aged prior loud, full stop." A refreshed memory's
+        # age keeps ticking up — only the stored emotion is restored, not
+        # encoding-time recency.
+        if seed_refresh_on_recall:
+            for _m in M:
+                if _m.get("tag") == "seed" and "encoding_emotion" in _m:
+                    _m["emotion"] = dict(_m["encoding_emotion"])
 
         # Build current context
         ctx_features = _build_features(
