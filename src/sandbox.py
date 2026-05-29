@@ -187,7 +187,10 @@ def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
                 tag_aware_recall=False, mem_capacity=None,
                 encoding_jitter=0.0, softmax_temp=None,
                 tag_aware_injection=False, tag_floors=None,
-                seed_refresh_on_recall=False):
+                seed_refresh_on_recall=False,
+                seed_refresh_capped_on_recall=False,
+                collect_impact_trace=False,
+                action_exploration=0.0):
     """
     Run one RvR episode and return a result dict.
 
@@ -224,6 +227,7 @@ def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
     last_target = None
     steps_used = 0
     outcome = "TIMEOUT"
+    _impact_trace = []  # populated only when collect_impact_trace=True
 
     for step in range(int(t_snap)):
         steps_used += 1
@@ -249,10 +253,58 @@ def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
                 if _m.get("tag") == "seed" and "encoding_emotion" in _m:
                     _m["emotion"] = dict(_m["encoding_emotion"])
 
+        # Capped seed-refresh variant: instead of OVERWRITING stored.emotion
+        # with the encoding template (which over-restores when stored has not
+        # yet decayed below the template), apply a per-dim max guardrail —
+        # m.emotion[k] = max(stored[k], floor[k]) for any memory tagged 'seed'
+        # carrying an 'encoding_emotion_floor' template. This is the same
+        # operator that emotion.inject_recalled_emotion_tag_aware applies at
+        # the injection gate, but moved one step earlier — to the stored
+        # state itself. If this matches seed_only_floor at every β_guilt cell
+        # then the operative mechanism is "max-guardrail applied to the seed"
+        # and the tag-floor dispatch table can be compressed to a single per-
+        # memory floor field at encoding time. (Off by default — preserves
+        # all prior experiment behavior.) Used by exp_seed_refresh_capped
+        # (2026-05-19) as the follow-up to exp_seed_refresh which was PARTIAL.
+        if seed_refresh_capped_on_recall:
+            for _m in M:
+                if _m.get("tag") == "seed" and "encoding_emotion_floor" in _m:
+                    floor = _m["encoding_emotion_floor"]
+                    stored = _m.get("emotion", {})
+                    capped = {}
+                    for dim in stored.keys():
+                        s = stored.get(dim, 0.0)
+                        f = floor.get(dim, 0.0)
+                        capped[dim] = s if s > f else f
+                    _m["emotion"] = capped
+
         # Build current context
         ctx_features = _build_features(
             agent_pos, partner_pos, resource_pos, partner_alive
         )
+
+        # Optional per-step impact trace (off by default — preserves prior
+        # behavior). When collect_impact_trace=True, records the MemoryImpact
+        # of the first 'seed'-tagged memory at every step, AFTER any capped/
+        # refresh operations apply and BEFORE the recall is used. This lets
+        # exp_capped_floor_impact_decomp ask whether seed-memory impact
+        # traces diverge across modes (off / seed_only_floor /
+        # seed_refresh_capped) at the recall-side measurement layer even when
+        # their macro ep0 rescue rates are the same.
+        if collect_impact_trace:
+            _seed_mem = next((m for m in M if m.get("tag") == "seed"), None)
+            if _seed_mem is not None:
+                _s_imp = memory.memory_impact(_seed_mem, ctx_features)
+                _scored_top = memory.recall(M, ctx_features, top_k=1)
+                _top1_is_seed = bool(_scored_top and _scored_top[0][0] is _seed_mem)
+                _impact_trace.append({
+                    "step": step,
+                    "seed_impact": _s_imp,
+                    "top1_is_seed": 1 if _top1_is_seed else 0,
+                    "seed_stored_guilt": _seed_mem["emotion"].get("guilt", 0.0),
+                    "seed_stored_loyalty": _seed_mem["emotion"].get("loyalty", 0.0),
+                    "seed_age": _seed_mem["age"],
+                })
 
         # Memory recall. tag_aware_recall=True (off by default — preserves prior
         # behavior) routes through the tag-keyed variant: a memory counts as
@@ -338,6 +390,13 @@ def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
                 if r <= acc:
                     chosen = a
                     break
+        # ε-greedy exploration override: with probability action_exploration,
+        # replace the softmax-chosen action with a uniformly random action.
+        # Used by exp_recipe_universal to test whether action-level
+        # exploration (vs softmax-temperature noise) breaks the Paralysis
+        # Valley LOCK-IN identified in paralysis_softmax_fix.
+        if action_exploration > 0.0 and rng.random() < action_exploration:
+            chosen = rng.choice(ACTIONS)
         action_history.append(chosen)
 
         # Track target intent BEFORE moving
@@ -439,4 +498,5 @@ def run_episode(t_snap, kappa, seed_memory=True, mem_severity=1.0,
         "mem_preage": mem_preage,
         "mem_emotion_decay": mem_emotion_decay,
         "emotion_noise": emotion_noise,
+        "impact_trace": _impact_trace,
     }
