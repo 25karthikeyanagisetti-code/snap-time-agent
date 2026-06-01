@@ -2,6 +2,20 @@
 
 One entry per scheduled-task run. Most recent at the bottom.
 
+## 2026-05-29 — behavioral_typing_verify (THE HEADLINE — MULTI-SEED VERIFIED)
+- Hypothesis: the 86% rescuer-rate finding from this morning's behavioral_typing re-analysis (single-seed) survives multi-seed replication with separation > 50 pts vs control.
+- Result: VERIFIED, sharper than the original estimate. Across 5 independent seed groups: σ=0.40 treatment yields 88.8% ± 8.2% rescuer rate vs 4.8% ± 3.3% in σ=0 control. Failure rate: 0.0% across ALL 125 treatment agents vs 20.0% in control. Welch t=21.2, p<<0.001. Separation +84.0 pts.
+- Headline number: 88.8% ± 8.2% rescuer rate; 0.0% failure rate (verified across 5 seeds, n=125 agents).
+- This is the project's biggest verified finding — multi-seed evidence that the framework DOES produce behavioral types from experience under encoding diversity at high κ. Answers the Wave-3 open question.
+- Files: experiments/behavioral_typing_verify_v1/{README.md, results.csv, behavioral_typing_verify.png}
+- Pairs with: experiments/behavioral_typing_v1/ (single-seed re-analysis that surfaced the finding).
+
+## 2026-05-29 — behavioral_typing (re-analysis surfacing the finding)
+- Hypothesis: the morning's "behavioral types don't emerge" claim (divergence@5-9 ~+3pts) might be using the wrong metric — per-agent typing distribution should be checked directly.
+- Result: BIG. Re-analysis of jitter_sigma_long_v1 reveals 86% of agents at σ=0.40 κ=2.0 over 20 chained episodes become BEHAVIORAL RESCUERS (≥15/20 rescues); 0% become behavioral failures. At σ=0 baseline: 0% rescuers, 10% failures, 64% middling. Typing is UNIPOLAR (everyone becomes a rescuer), not bipolar (which is why divergence@5-9 missed it for 10 months of experiments).
+- Headline number: 86% rescuers vs 0% baseline; 0% failures vs 10% baseline. Single-seed.
+- Files: experiments/behavioral_typing_v1/{README.md, per_agent_rescue_counts.csv, behavioral_typing.png}
+
 ## 2026-05-01 — selective_encoding
 - Hypothesis: Encoding only high-magnitude emotional outcomes (gate on max(final_emotion)) prevents the Homogenization Collapse at κ=1.0.
 - Result: failed — magnitude-gating produces a U-shaped homogenization: too little encoding floods the store, too much lets the seeded prior dominate; rescue rate at ep9 stays ≤15% across all τ.
