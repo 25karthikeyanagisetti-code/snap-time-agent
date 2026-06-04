@@ -152,3 +152,9 @@ One entry per scheduled-task run. Most recent at the bottom.
 - Result: Prediction B confirmed (downstream cancellation). At β_loyalty=0.50, seed_refresh_capped carries 0.113 more seed impact than seed_only_floor across steps 1–11 of ep0, yet achieves 7.5 pts LOWER rescue rate (72.5% vs 80.0%). The impact amplification from writing the floor back to stored emotion (boosting exp(γ·|emotion|)) over-steers guilt recall throughout the episode and hurts rather than helps. At β_loyalty=0.05, impact gap is 0.041 (late-episode only) and rescue gap is within N=40 noise.
 - Headline number: max impact gap at β_loyalty=0.50 = 0.113; Δrescue(floor − capped) = +7.5 pts despite capped having higher recall strength.
 - Files: experiments/capped_floor_impact_decomp_v1/README.md, results_macro.csv, results_trace.csv, impact_decomp_chart.png, finding.md
+
+## 2026-06-04 — impact_decomp_beta_sweep
+- Hypothesis: Fine sweep β_loyalty ∈ {0.10, 0.20, 0.30, 0.40, 0.50} reveals the exact threshold where seed_refresh_capped's impact gap crosses 0.05 and the rescue penalty becomes detectable.
+- Result: PARTIAL — Prediction A CONFIRMED (impact gap monotone 0.016→0.077), threshold at β_loyalty* ≈ 0.35–0.40 confirmed; Prediction C NOT confirmed — rescue penalty indistinguishable from noise at N=40 (range −7.5 to +7.5 pts; 2-SE ≈ 14 pts). Prior experiment's 7.5 pt penalty at β_loyalty=0.50 was likely N=40 variance.
+- Headline number: impact gap threshold crossed at β_loyalty* ≈ 0.35–0.40; rescue penalty = 0 ± noise (N=40).
+- Files: experiments/impact_decomp_beta_sweep_v1/README.md, results_macro.csv, results_trace.csv, impact_decomp_beta_sweep.png, finding.md
