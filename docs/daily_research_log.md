@@ -158,3 +158,17 @@ One entry per scheduled-task run. Most recent at the bottom.
 - Result: PARTIAL — Prediction A CONFIRMED (impact gap monotone 0.016→0.077), threshold at β_loyalty* ≈ 0.35–0.40 confirmed; Prediction C NOT confirmed — rescue penalty indistinguishable from noise at N=40 (range −7.5 to +7.5 pts; 2-SE ≈ 14 pts). Prior experiment's 7.5 pt penalty at β_loyalty=0.50 was likely N=40 variance.
 - Headline number: impact gap threshold crossed at β_loyalty* ≈ 0.35–0.40; rescue penalty = 0 ± noise (N=40).
 - Files: experiments/impact_decomp_beta_sweep_v1/README.md, results_macro.csv, results_trace.csv, impact_decomp_beta_sweep.png, finding.md
+
+## 2026-06-07 — impact_decomp_n200_threshold
+- Hypothesis: Replicating the β_loyalty ∈ {0.30, 0.40} threshold-straddling cells at N=200 (2-SE ≈ 3.5pts) settles whether the impact-gap threshold crossed at β_loyalty*≈0.35–0.40 has a behavioral correlate (rescue penalty).
+- Result: Isomorphism CONFIRMED. β_loyalty=0.30: penalty 0.0pts, impact gap 0.0496. β_loyalty=0.40: penalty 4.0pts (boundary of the ±4pt criterion), impact gap 0.0581. Neither cell shows a detectable over-steering signal beyond noise — the source-vs-gate isomorphism (max(stored,floor) at source vs at injection) is complete across the full β_loyalty axis at N=200.
+- Headline number: rescue penalty = {0.0, 4.0} pts at β_loyalty ∈ {0.30, 0.40}, both inside the ±4pt criterion.
+- Files: experiments/impact_decomp_n200_threshold_v1/{README.md, results_macro.csv, results_trace.csv, impact_decomp_n200_threshold.png, finding.md}
+
+## 2026-06-15 — jitter_plus_tag_aware (BIG EXPERIMENT — capacity record, divergence ceiling found)
+- Hypothesis: Combining encoding-diversity jitter (σ=0.40, verified unipolar typing at κ=2.0) with tag-aware recall (verified divergence restoration under β_guilt=0.30 laundering) in a 2×2 at κ=1.0, N=200/cell, 20 chained episodes, would push divergence@5–9 past +15pts — bipolar behavioral types (rescuer AND failure identities from early experience).
+- Result: PARTIAL. Divergence prediction REFUTED — ON/ON divergence@5–9 = +3.6pts, identical to tag-aware-alone, far below +15pts; rescuer rate (≥15/20) is 0% in every cell at κ=1.0. But capacity prediction EXCEEDED: behavioral-failure rate (≤4/20) drops 72.0% → 7.5% (9.6× reduction, largest in the project), and sustained rescue rate (ep5–9) rises 15.8% → 37.6% (2.4×), near-perfectly additive (36.4% predicted from independent deltas, 37.6% observed). ep15–19 = 38.5% — the most stable high plateau measured at κ=1.0.
+- Headline number: failure rate 72.0% → 7.5% (9.6× reduction); sustained rescue 15.8% → 37.6% (2.4×, additive within 1.2pts); divergence ceiling +3.6pts (unchanged by combination).
+- Interpretation: jitter and tag-aware recall are population-capacity levers, not identity-sorting levers — orthogonal to the bipolar-typing question. The κ=2.0 unipolar result remains the project's only confirmed "identity from experience" finding.
+- Files: experiments/jitter_plus_tag_aware_v1/{README.md, results.csv, jitter_plus_tag_aware.png, finding.md}
+- Follow-ups added to backlog: bipolar_typing_kappa_sweep, jitter_plus_tag_aware_n400, additive_decomposition_other_pairs.
